@@ -1,6 +1,6 @@
-# DevUtility
+# Forge
 
-DevUtility is a lightweight native desktop developer utility built with C++23,
+Forge is a lightweight native desktop developer utility built with C++23,
 SDL2, Dear ImGui, and OpenGL. It intentionally avoids web technologies,
 embedded browsers, scripting runtimes, package managers, and broad framework
 layers.
@@ -44,6 +44,16 @@ Vendor these dependencies manually:
 - SDL2 source tree in `external/SDL`
 - Dear ImGui docking-enabled source tree in `external/imgui`
 
+Recommended setup:
+
+```sh
+git clone --branch SDL2 https://github.com/libsdl-org/SDL.git external/SDL
+git clone --branch docking https://github.com/ocornut/imgui.git external/imgui
+```
+
+The dependency checkouts are intentionally ignored by this repository so local
+builds do not add thousands of third-party files to commits.
+
 Expected ImGui backend files:
 
 - `external/imgui/backends/imgui_impl_sdl2.cpp`
@@ -61,13 +71,13 @@ cmake --build build --config Release
 Run the executable:
 
 ```sh
-./build/devutility
+./build/forge
 ```
 
 On Windows with a multi-config generator, the executable is usually under:
 
 ```text
-build/Release/devutility.exe
+build/Release/forge.exe
 ```
 
 ## Implemented Tools

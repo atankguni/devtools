@@ -69,10 +69,10 @@ void UiShell::draw(const core::ToolRegistry& registry)
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0F);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0F);
-    ImGui::Begin("DevUtility", nullptr, windowFlags);
+    ImGui::Begin("Forge", nullptr, windowFlags);
     ImGui::PopStyleVar(2);
 
-    const ImGuiID dockspaceId = ImGui::GetID("DevUtilityDockspace");
+    const ImGuiID dockspaceId = ImGui::GetID("ForgeDockspace");
     ImGui::DockSpace(dockspaceId, ImVec2(0.0F, 0.0F), ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGui::End();

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(DevUtility
+project(Forge
     VERSION 0.1.0
     DESCRIPTION "Lightweight native desktop developer utility"
     LANGUAGES CXX
@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(DEVUTILITY_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+option(FORGE_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/external/SDL/CMakeLists.txt")
     message(FATAL_ERROR
@@ -47,7 +47,7 @@ target_include_directories(imgui PUBLIC
 
 target_compile_features(imgui PUBLIC cxx_std_23)
 
-add_executable(devutility
+add_executable(forge
     src/main.cpp
     src/app/Application.cpp
     src/core/ToolRegistry.cpp
@@ -61,27 +61,27 @@ add_executable(devutility
     src/tools/timestamp/TimestampTool.cpp
 )
 
-target_include_directories(devutility PRIVATE src)
-target_compile_features(devutility PRIVATE cxx_std_23)
+target_include_directories(forge PRIVATE src)
+target_compile_features(forge PRIVATE cxx_std_23)
 
-target_link_libraries(devutility PRIVATE imgui)
+target_link_libraries(forge PRIVATE imgui)
 
 if(TARGET SDL2::SDL2-static)
-    target_link_libraries(devutility PRIVATE SDL2::SDL2-static)
+    target_link_libraries(forge PRIVATE SDL2::SDL2-static)
 elseif(TARGET SDL2-static)
-    target_link_libraries(devutility PRIVATE SDL2-static)
+    target_link_libraries(forge PRIVATE SDL2-static)
 else()
-    target_link_libraries(devutility PRIVATE SDL2)
+    target_link_libraries(forge PRIVATE SDL2)
 endif()
 
 if(WIN32)
-    target_link_libraries(devutility PRIVATE opengl32)
+    target_link_libraries(forge PRIVATE opengl32)
 elseif(APPLE)
     find_library(COCOA_LIBRARY Cocoa REQUIRED)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(COREVIDEO_LIBRARY CoreVideo REQUIRED)
     find_library(OPENGL_LIBRARY OpenGL REQUIRED)
-    target_link_libraries(devutility PRIVATE
+    target_link_libraries(forge PRIVATE
         ${COCOA_LIBRARY}
         ${IOKIT_LIBRARY}
         ${COREVIDEO_LIBRARY}
@@ -89,19 +89,19 @@ elseif(APPLE)
     )
 else()
     find_package(OpenGL REQUIRED)
-    target_link_libraries(devutility PRIVATE OpenGL::GL)
+    target_link_libraries(forge PRIVATE OpenGL::GL)
 endif()
 
 if(MSVC)
-    target_compile_options(devutility PRIVATE /W4 /permissive-)
+    target_compile_options(forge PRIVATE /W4 /permissive-)
     target_compile_options(imgui PRIVATE /W3)
-    if(DEVUTILITY_WARNINGS_AS_ERRORS)
-        target_compile_options(devutility PRIVATE /WX)
+    if(FORGE_WARNINGS_AS_ERRORS)
+        target_compile_options(forge PRIVATE /WX)
     endif()
 else()
-    target_compile_options(devutility PRIVATE -Wall -Wextra -Wpedantic)
-    if(DEVUTILITY_WARNINGS_AS_ERRORS)
-        target_compile_options(devutility PRIVATE -Werror)
+    target_compile_options(forge PRIVATE -Wall -Wextra -Wpedantic)
+    if(FORGE_WARNINGS_AS_ERRORS)
+        target_compile_options(forge PRIVATE -Werror)
     endif()
 endif()
 
