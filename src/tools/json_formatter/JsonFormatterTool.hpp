@@ -10,7 +10,14 @@ public:
     void draw();
 
 private:
+    enum class OutputMode {
+        TwoSpaces,
+        FourSpaces,
+        Minified,
+    };
+
     std::array<char, 65536> input_ {};
+    OutputMode outputMode_ = OutputMode::TwoSpaces;
     std::string output_;
     std::string status_;
 };

@@ -9,10 +9,17 @@
 
 namespace {
 
+enum class JsonOutputMode {
+    TwoSpaces,
+    FourSpaces,
+    Minified,
+};
+
 class JsonFormatter {
 public:
-    explicit JsonFormatter(std::string_view input)
+    explicit JsonFormatter(std::string_view input, JsonOutputMode outputMode)
         : input_(input)
+        , outputMode_(outputMode)
     {
     }
 
@@ -59,7 +66,47 @@ private:
 
     void writeIndent(int depth)
     {
-        output_.append(static_cast<std::size_t>(depth) * 2U, ' ');
+        output_.append(static_cast<std::size_t>(depth) * indentWidth(), ' ');
+    }
+
+    void writeNewline()
+    {
+        if (!minified()) {
+            output_ += '\n';
+        }
+    }
+
+    void writeSpace()
+    {
+        if (!minified()) {
+            output_ += ' ';
+        }
+    }
+
+    void writeIndentIfPretty(int depth)
+    {
+        if (!minified()) {
+            writeIndent(depth);
+        }
+    }
+
+    [[nodiscard]] bool minified() const
+    {
+        return outputMode_ == JsonOutputMode::Minified;
+    }
+
+    [[nodiscard]] unsigned int indentWidth() const
+    {
+        switch (outputMode_) {
+        case JsonOutputMode::TwoSpaces:
+            return 2U;
+        case JsonOutputMode::FourSpaces:
+            return 4U;
+        case JsonOutputMode::Minified:
+            return 0U;
+        }
+
+        return 2U;
     }
 
     bool consume(char expected)
@@ -111,10 +158,10 @@ private:
             return true;
         }
 
-        output_ += '\n';
+        writeNewline();
         while (true) {
             skipWhitespace();
-            writeIndent(depth + 1);
+            writeIndentIfPretty(depth + 1);
 
             if (!parseString()) {
                 return false;
@@ -124,7 +171,8 @@ private:
             if (!consume(':')) {
                 return fail("Expected ':' after object key");
             }
-            output_ += ": ";
+            output_ += ':';
+            writeSpace();
 
             if (!parseValue(depth + 1)) {
                 return false;
@@ -132,8 +180,8 @@ private:
 
             skipWhitespace();
             if (consume('}')) {
-                output_ += '\n';
-                writeIndent(depth);
+                writeNewline();
+                writeIndentIfPretty(depth);
                 output_ += '}';
                 return true;
             }
@@ -142,7 +190,8 @@ private:
                 return fail("Expected ',' or '}' in object");
             }
 
-            output_ += ",\n";
+            output_ += ',';
+            writeNewline();
         }
     }
 
@@ -157,9 +206,9 @@ private:
             return true;
         }
 
-        output_ += '\n';
+        writeNewline();
         while (true) {
-            writeIndent(depth + 1);
+            writeIndentIfPretty(depth + 1);
 
             if (!parseValue(depth + 1)) {
                 return false;
@@ -167,8 +216,8 @@ private:
 
             skipWhitespace();
             if (consume(']')) {
-                output_ += '\n';
-                writeIndent(depth);
+                writeNewline();
+                writeIndentIfPretty(depth);
                 output_ += ']';
                 return true;
             }
@@ -177,7 +226,8 @@ private:
                 return fail("Expected ',' or ']' in array");
             }
 
-            output_ += ",\n";
+            output_ += ',';
+            writeNewline();
             skipWhitespace();
         }
     }
@@ -300,6 +350,7 @@ private:
     }
 
     std::string_view input_;
+    JsonOutputMode outputMode_;
     std::size_t position_ = 0;
     std::string output_;
     std::string error_;
@@ -319,8 +370,35 @@ void JsonFormatterTool::draw()
         ImVec2(-1.0F, ImGui::GetTextLineHeight() * 14.0F)
     );
 
+    ImGui::TextUnformatted("Output format");
+    int selectedMode = static_cast<int>(outputMode_);
+    if (ImGui::RadioButton("2 spaces", selectedMode == static_cast<int>(OutputMode::TwoSpaces))) {
+        outputMode_ = OutputMode::TwoSpaces;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("4 spaces", selectedMode == static_cast<int>(OutputMode::FourSpaces))) {
+        outputMode_ = OutputMode::FourSpaces;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Minified", selectedMode == static_cast<int>(OutputMode::Minified))) {
+        outputMode_ = OutputMode::Minified;
+    }
+
     if (ImGui::Button("Format")) {
-        JsonFormatter formatter(input_.data());
+        JsonOutputMode jsonOutputMode = JsonOutputMode::TwoSpaces;
+        switch (outputMode_) {
+        case OutputMode::TwoSpaces:
+            jsonOutputMode = JsonOutputMode::TwoSpaces;
+            break;
+        case OutputMode::FourSpaces:
+            jsonOutputMode = JsonOutputMode::FourSpaces;
+            break;
+        case OutputMode::Minified:
+            jsonOutputMode = JsonOutputMode::Minified;
+            break;
+        }
+
+        JsonFormatter formatter(input_.data(), jsonOutputMode);
         if (formatter.format(output_, status_)) {
             status_ = "Valid JSON";
         }
