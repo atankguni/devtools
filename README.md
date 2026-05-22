@@ -1,6 +1,6 @@
-# Forge
+# DevTools
 
-Forge is a lightweight native desktop developer utility built with C++23,
+DevTools is a lightweight native desktop developer utility built with C++23,
 SDL2, Dear ImGui, and OpenGL. It intentionally avoids web technologies,
 embedded browsers, scripting runtimes, package managers, and broad framework
 layers.
@@ -71,13 +71,13 @@ cmake --build build --config Release
 Run the executable:
 
 ```sh
-./build/forge
+./build/devtools
 ```
 
 On Windows with a multi-config generator, the executable is usually under:
 
 ```text
-build/Release/forge.exe
+build/Release/devtools.exe
 ```
 
 ## Implemented Tools

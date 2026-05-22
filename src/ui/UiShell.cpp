@@ -76,7 +76,7 @@ void UiShell::draw(const core::ToolRegistry& registry)
     ImGui::SetNextWindowPos(sidebarPos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(sidebarSize, ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14.0F, 16.0F));
-    if (ImGui::Begin("Forge Sidebar", nullptr, panelFlags)) {
+    if (ImGui::Begin("DevTools Sidebar", nullptr, panelFlags)) {
         drawSidebar(registry);
     }
     ImGui::End();
@@ -85,7 +85,7 @@ void UiShell::draw(const core::ToolRegistry& registry)
     ImGui::SetNextWindowPos(workspacePos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(workspaceSize, ImGuiCond_Always);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(18.0F, 18.0F));
-    if (ImGui::Begin("Forge Workspace", nullptr, panelFlags)) {
+    if (ImGui::Begin("DevTools Workspace", nullptr, panelFlags)) {
         drawCurrentTool(registry);
     }
     ImGui::End();
@@ -96,7 +96,7 @@ void UiShell::draw(const core::ToolRegistry& registry)
 
 void UiShell::drawSidebar(const core::ToolRegistry& registry)
 {
-    ImGui::TextColored(ImVec4(0.72F, 0.82F, 0.96F, 1.0F), "Forge");
+    ImGui::TextColored(ImVec4(0.72F, 0.82F, 0.96F, 1.0F), "DevTools");
     ImGui::TextDisabled("Developer tools");
     ImGui::Spacing();
     ImGui::Separator();
