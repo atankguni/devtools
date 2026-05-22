@@ -126,15 +126,15 @@ temp/
 # =========================================================
 
 .cache/
+imgui.ini
 
 # =========================================================
 
-# Do NOT ignore vendored dependencies
+# Local dependency checkouts
 
 # =========================================================
 
-# external/imgui/
-
-# external/SDL/
-
-# Keep vendored source code tracked in git
+external/SDL/**
+external/imgui/**
+!external/SDL/.gitkeep
+!external/imgui/.gitkeep
