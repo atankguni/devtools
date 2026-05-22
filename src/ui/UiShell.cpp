@@ -8,6 +8,10 @@
 
 namespace {
 
+constexpr float outerPadding = 14.0F;
+constexpr float panelGap = 12.0F;
+constexpr float sidebarWidth = 248.0F;
+
 bool containsCaseInsensitive(std::string_view text, std::string_view query)
 {
     if (query.empty()) {
@@ -54,68 +58,71 @@ void UiShell::draw(const core::ToolRegistry& registry)
     }
 
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(viewport->WorkSize);
-    ImGui::SetNextWindowViewport(viewport->ID);
+    const ImVec2 sidebarPos(viewport->WorkPos.x + outerPadding, viewport->WorkPos.y + outerPadding);
+    const ImVec2 sidebarSize(sidebarWidth, std::max(320.0F, viewport->WorkSize.y - (outerPadding * 2.0F)));
+    const ImVec2 workspacePos(sidebarPos.x + sidebarWidth + panelGap, sidebarPos.y);
+    const ImVec2 workspaceSize(
+        std::max(520.0F, viewport->WorkSize.x - sidebarWidth - panelGap - (outerPadding * 2.0F)),
+        sidebarSize.y
+    );
 
-    constexpr ImGuiWindowFlags windowFlags =
+    constexpr ImGuiWindowFlags panelFlags =
         ImGuiWindowFlags_NoTitleBar
         | ImGuiWindowFlags_NoCollapse
         | ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoMove
-        | ImGuiWindowFlags_NoBackground
-        | ImGuiWindowFlags_NoBringToFrontOnFocus
-        | ImGuiWindowFlags_NoNavFocus;
+        | ImGuiWindowFlags_NoSavedSettings;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0F);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0F);
-    ImGui::Begin("Forge", nullptr, windowFlags);
-    ImGui::PopStyleVar(2);
-
-    const ImGuiID dockspaceId = ImGui::GetID("ForgeDockspace");
-    ImGui::DockSpace(dockspaceId, ImVec2(0.0F, 0.0F), ImGuiDockNodeFlags_PassthruCentralNode);
-
-    ImGui::End();
-
-    ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + 12.0F, viewport->WorkPos.y + 12.0F), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(240.0F, std::max(320.0F, viewport->WorkSize.y - 24.0F)), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Tools")) {
+    ImGui::SetNextWindowPos(sidebarPos, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(sidebarSize, ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14.0F, 16.0F));
+    if (ImGui::Begin("Forge Sidebar", nullptr, panelFlags)) {
         drawSidebar(registry);
     }
     ImGui::End();
+    ImGui::PopStyleVar();
 
-    ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x + 264.0F, viewport->WorkPos.y + 12.0F), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(
-        ImVec2(std::max(520.0F, viewport->WorkSize.x - 276.0F), std::max(320.0F, viewport->WorkSize.y - 24.0F)),
-        ImGuiCond_FirstUseEver
-    );
-    if (ImGui::Begin("Workspace")) {
+    ImGui::SetNextWindowPos(workspacePos, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(workspaceSize, ImGuiCond_Always);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(18.0F, 18.0F));
+    if (ImGui::Begin("Forge Workspace", nullptr, panelFlags)) {
         drawCurrentTool(registry);
     }
     ImGui::End();
+    ImGui::PopStyleVar();
 
     drawCommandPalette(registry);
 }
 
 void UiShell::drawSidebar(const core::ToolRegistry& registry)
 {
-    ImGui::TextUnformatted("Tools");
+    ImGui::TextColored(ImVec4(0.72F, 0.82F, 0.96F, 1.0F), "Forge");
+    ImGui::TextDisabled("Developer tools");
+    ImGui::Spacing();
     ImGui::Separator();
+    ImGui::Spacing();
 
     for (const core::Tool& tool : registry.tools()) {
         const bool selected = activeToolId_ == tool.id;
-        if (ImGui::Selectable(tool.name.c_str(), selected)) {
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0F, 5.0F));
+        if (ImGui::Selectable(tool.name.c_str(), selected, 0, ImVec2(0.0F, 28.0F))) {
             activeToolId_ = tool.id;
         }
+        ImGui::PopStyleVar();
 
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("%s", tool.description.c_str());
         }
     }
 
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - 34.0F);
+    const float footerY = ImGui::GetWindowHeight() - 48.0F;
+    if (footerY > ImGui::GetCursorPosY()) {
+        ImGui::SetCursorPosY(footerY);
+    }
     ImGui::Separator();
-    ImGui::TextDisabled("Ctrl/Cmd+P: commands");
+    ImGui::TextDisabled("Cmd/Ctrl+P");
+    ImGui::SameLine();
+    ImGui::TextDisabled("Command palette");
 }
 
 void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
@@ -126,9 +133,11 @@ void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
         return;
     }
 
-    ImGui::TextUnformatted(activeTool->name.c_str());
+    ImGui::TextColored(ImVec4(0.78F, 0.87F, 1.0F, 1.0F), "%s", activeTool->name.c_str());
     ImGui::TextDisabled("%s", activeTool->description.c_str());
+    ImGui::Spacing();
     ImGui::Separator();
+    ImGui::Spacing();
 
     activeTool->draw();
 }
@@ -139,7 +148,16 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
         return;
     }
 
-    ImGui::SetNextWindowSize(ImVec2(520.0F, 360.0F), ImGuiCond_Appearing);
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    const ImVec2 paletteSize(560.0F, 380.0F);
+    ImGui::SetNextWindowSize(paletteSize, ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(
+        ImVec2(
+            viewport->WorkPos.x + (viewport->WorkSize.x - paletteSize.x) * 0.5F,
+            viewport->WorkPos.y + (viewport->WorkSize.y - paletteSize.y) * 0.25F
+        ),
+        ImGuiCond_Appearing
+    );
     if (ImGui::BeginPopupModal("Command Palette", &commandPaletteOpen_, ImGuiWindowFlags_NoSavedSettings)) {
         ImGui::SetKeyboardFocusHere();
         ImGui::InputTextWithHint("##CommandSearch", "Search tools...", commandSearch_.data(), commandSearch_.size());

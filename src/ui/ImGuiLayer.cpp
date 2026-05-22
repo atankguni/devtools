@@ -6,9 +6,27 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl2.h>
 
+#include <filesystem>
 #include <stdexcept>
 
 namespace ui {
+
+namespace {
+
+void loadDefaultFont(ImGuiIO& io)
+{
+#if defined(__APPLE__)
+    constexpr const char* fontPath = "/System/Library/Fonts/SFNS.ttf";
+    if (std::filesystem::exists(fontPath)
+        && io.Fonts->AddFontFromFileTTF(fontPath, 15.0F) != nullptr) {
+        return;
+    }
+#endif
+
+    io.Fonts->AddFontDefault();
+}
+
+} // namespace
 
 ImGuiLayer::ImGuiLayer(SDL_Window* window, SDL_GLContext glContext)
 {
@@ -18,6 +36,7 @@ ImGuiLayer::ImGuiLayer(SDL_Window* window, SDL_GLContext glContext)
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    loadDefaultFont(io);
 
     applyDarkTheme();
 
