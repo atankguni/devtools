@@ -25,6 +25,47 @@ std::string formatLocalTime(std::time_t timestamp)
     return stream.str();
 }
 
+std::string formatUtcIso8601(std::time_t timestamp)
+{
+    std::tm utc {};
+#if defined(_WIN32)
+    gmtime_s(&utc, &timestamp);
+#else
+    gmtime_r(&timestamp, &utc);
+#endif
+
+    std::ostringstream stream;
+    stream << std::put_time(&utc, "%Y-%m-%dT%H:%M:%SZ");
+    return stream.str();
+}
+
+std::string formatLocalIso8601(std::time_t timestamp)
+{
+    std::tm local {};
+#if defined(_WIN32)
+    localtime_s(&local, &timestamp);
+#else
+    localtime_r(&timestamp, &local);
+#endif
+
+    std::ostringstream stream;
+    stream << std::put_time(&local, "%Y-%m-%dT%H:%M:%S%z");
+    std::string value = stream.str();
+    if (value.size() >= 5U) {
+        value.insert(value.size() - 2U, ":");
+    }
+    return value;
+}
+
+std::string formatTimestampResult(std::time_t timestamp)
+{
+    std::ostringstream stream;
+    stream << "Local time: " << formatLocalTime(timestamp) << '\n'
+           << "ISO 8601 UTC: " << formatUtcIso8601(timestamp) << '\n'
+           << "ISO 8601 local: " << formatLocalIso8601(timestamp);
+    return stream.str();
+}
+
 } // namespace
 
 namespace tools::timestamp {
@@ -35,6 +76,7 @@ void TimestampTool::draw()
     const auto unixNow = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
 
     ImGui::Text("Current Unix timestamp: %lld", static_cast<long long>(unixNow));
+    ImGui::Text("Current ISO 8601 UTC: %s", formatUtcIso8601(static_cast<std::time_t>(unixNow)).c_str());
 
     if (ImGui::Button("Use Current Time")) {
         const std::string value = std::to_string(unixNow);
@@ -50,7 +92,7 @@ void TimestampTool::draw()
         const auto result = std::from_chars(input.data(), input.data() + input.size(), parsed);
 
         if (result.ec == std::errc {} && result.ptr == input.data() + input.size()) {
-            result_ = formatLocalTime(static_cast<std::time_t>(parsed));
+            result_ = formatTimestampResult(static_cast<std::time_t>(parsed));
         } else {
             result_ = "Invalid timestamp";
         }
