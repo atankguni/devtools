@@ -25,7 +25,7 @@ SdlOpenGlWindow::SdlOpenGlWindow(std::string title, int width, int height)
         SDL_WINDOWPOS_CENTERED,
         width,
         height,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
     );
 
     if (window_ == nullptr) {
