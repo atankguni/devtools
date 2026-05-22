@@ -8,6 +8,7 @@ namespace core {
 void ToolRegistry::add(Tool tool)
 {
     tools_.push_back(std::move(tool));
+    std::ranges::sort(tools_, {}, &Tool::name);
 }
 
 std::span<const Tool> ToolRegistry::tools() const
