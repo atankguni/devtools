@@ -1,5 +1,7 @@
 #include "tools/permissions/PermissionsTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <array>
@@ -82,12 +84,12 @@ void PermissionsTool::draw()
     ImGui::Text("Octal: %s", octal.c_str());
     ImGui::Text("Symbolic: %s", symbolic_.c_str());
     if (ImGui::Button("Copy Octal")) {
-        ImGui::SetClipboardText(octal.c_str());
+        ui::copyToClipboard(octal.c_str());
         status_ = "Copied octal";
     }
     ImGui::SameLine();
     if (ImGui::Button("Copy Symbolic")) {
-        ImGui::SetClipboardText(symbolic_.c_str());
+        ui::copyToClipboard(symbolic_.c_str());
         status_ = "Copied symbolic";
     }
     if (!status_.empty()) {

@@ -1,5 +1,7 @@
 #include "tools/markup/MarkupTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <algorithm>
@@ -128,7 +130,7 @@ void MarkupTool::draw()
     if (!output_.empty()) {
         ImGui::Separator();
         if (ImGui::Button("Copy Output")) {
-            ImGui::SetClipboardText(output_.c_str());
+            ui::copyToClipboard(output_.c_str());
             status_ = "Copied output";
         }
         std::vector<char> buffer(output_.begin(), output_.end());

@@ -1,5 +1,7 @@
 #include "tools/url/UrlTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <cctype>
@@ -97,7 +99,7 @@ void UrlTool::draw()
     if (!output_.empty()) {
         ImGui::SameLine();
         if (ImGui::Button("Copy Output")) {
-            ImGui::SetClipboardText(output_.c_str());
+            ui::copyToClipboard(output_.c_str());
             status_ = "Copied output";
         }
     }

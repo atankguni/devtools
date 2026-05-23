@@ -1,5 +1,7 @@
 #include "tools/password/PasswordTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <algorithm>
@@ -38,7 +40,7 @@ void drawCopyableOutput(const char* label, const std::string& value)
     if (!value.empty()) {
         ImGui::SameLine();
         if (ImGui::Button("Copy")) {
-            ImGui::SetClipboardText(value.c_str());
+            ui::copyToClipboard(value.c_str());
         }
     }
     ImGui::InputTextMultiline(

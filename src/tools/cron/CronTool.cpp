@@ -1,5 +1,7 @@
 #include "tools/cron/CronTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <algorithm>
@@ -188,7 +190,7 @@ void CronTool::draw()
     if (!output_.empty()) {
         ImGui::Separator();
         if (ImGui::Button("Copy Runs")) {
-            ImGui::SetClipboardText(output_.c_str());
+            ui::copyToClipboard(output_.c_str());
             status_ = "Copied runs";
         }
         ImGui::TextUnformatted(output_.c_str());

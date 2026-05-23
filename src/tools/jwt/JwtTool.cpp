@@ -1,5 +1,7 @@
 #include "tools/jwt/JwtTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <algorithm>
@@ -163,7 +165,7 @@ void JwtTool::draw()
             if (!decodedHeader_.empty()) {
                 ImGui::SameLine();
                 if (ImGui::Button("Copy Header")) {
-                    ImGui::SetClipboardText(decodedHeader_.c_str());
+                    ui::copyToClipboard(decodedHeader_.c_str());
                     status_ = "Copied header";
                 }
             }
@@ -181,7 +183,7 @@ void JwtTool::draw()
             if (!decodedPayload_.empty()) {
                 ImGui::SameLine();
                 if (ImGui::Button("Copy Payload")) {
-                    ImGui::SetClipboardText(decodedPayload_.c_str());
+                    ui::copyToClipboard(decodedPayload_.c_str());
                     status_ = "Copied payload";
                 }
             }
@@ -240,7 +242,7 @@ void JwtTool::draw()
         ImGui::TextUnformatted("Token");
         ImGui::SameLine();
         if (ImGui::Button("Copy Token")) {
-            ImGui::SetClipboardText(encodedToken_.c_str());
+            ui::copyToClipboard(encodedToken_.c_str());
             status_ = "Copied token";
         }
 

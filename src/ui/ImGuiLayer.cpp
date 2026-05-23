@@ -1,5 +1,6 @@
 #include "ui/ImGuiLayer.hpp"
 
+#include "ui/Clipboard.hpp"
 #include "ui/Theme.hpp"
 
 #include <imgui.h>
@@ -93,6 +94,8 @@ void ImGuiLayer::handleEvent(const SDL_Event& event)
 void ImGuiLayer::applySettings(const UiSettings& settings)
 {
     applyThemeMode(settings.themeMode);
+    applyDensity(settings.density);
+    applyClipboardSettings(settings);
 
     if (settings.fontFamily != loadedFontFamily_ || settings.fontSize != loadedFontSize_) {
         loadFont(settings.fontFamily, settings.fontSize);

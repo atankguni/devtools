@@ -1,5 +1,7 @@
 #include "tools/json_formatter/JsonFormatterTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <charconv>
@@ -421,7 +423,7 @@ void JsonFormatterTool::draw()
     if (!output_.empty()) {
         ImGui::SameLine();
         if (ImGui::Button("Copy Output")) {
-            ImGui::SetClipboardText(output_.c_str());
+            ui::copyToClipboard(output_.c_str());
             status_ = "Copied output";
         }
     }

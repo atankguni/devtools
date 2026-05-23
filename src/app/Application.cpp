@@ -15,6 +15,7 @@ Application::Application()
     , imgui_(window_.window(), window_.glContext())
 {
     registerTools();
+    shell_.loadSettings(registry_);
 }
 
 int Application::run()
@@ -52,6 +53,7 @@ int Application::run()
         window_.swapBuffers();
     }
 
+    shell_.saveSettings();
     return 0;
 }
 

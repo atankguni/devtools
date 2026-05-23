@@ -34,5 +34,6 @@ ResolvedTheme resolveThemeMode(ThemeMode mode);
 const ThemePalette& themePalette(ResolvedTheme theme);
 void applyTheme(ResolvedTheme theme);
 void applyThemeMode(ThemeMode mode);
+void applyDensity(UiDensity density);
 
 } // namespace ui

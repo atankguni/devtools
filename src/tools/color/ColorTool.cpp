@@ -1,5 +1,7 @@
 #include "tools/color/ColorTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <algorithm>
@@ -90,7 +92,7 @@ void ColorTool::draw()
 
     ImGui::Separator();
     if (ImGui::Button("Copy Values")) {
-        ImGui::SetClipboardText(output_.c_str());
+        ui::copyToClipboard(output_.c_str());
         status_ = "Copied values";
     }
     ImGui::TextUnformatted(output_.c_str());

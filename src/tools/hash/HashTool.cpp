@@ -1,5 +1,7 @@
 #include "tools/hash/HashTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <array>
@@ -426,7 +428,7 @@ void drawHashRow(const char* label, const std::string& value)
     ImGui::SameLine(86.0F);
     ImGui::PushID(label);
     if (ImGui::Button("Copy")) {
-        ImGui::SetClipboardText(value.c_str());
+        ui::copyToClipboard(value.c_str());
     }
     ImGui::PopID();
     ImGui::SameLine();
@@ -472,7 +474,7 @@ void HashTool::draw()
         if (ImGui::Button("Copy All")) {
             const std::string all = "MD5: " + md5_ + "\nSHA-1: " + sha1_ + "\nSHA-256: " + sha256_
                 + "\nSHA-384: " + sha384_ + "\nSHA-512: " + sha512_;
-            ImGui::SetClipboardText(all.c_str());
+            ui::copyToClipboard(all.c_str());
             status_ = "Copied all hashes";
         }
         ImGui::TextDisabled("MD5 and SHA-1 are legacy hashes. Prefer SHA-256 or SHA-512 for new work.");

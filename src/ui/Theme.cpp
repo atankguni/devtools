@@ -246,4 +246,23 @@ void applyThemeMode(ThemeMode mode)
     applyTheme(resolveThemeMode(mode));
 }
 
+void applyDensity(UiDensity density)
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (density == UiDensity::Compact) {
+        style.WindowPadding = ImVec2(10.0F, 10.0F);
+        style.FramePadding = ImVec2(8.0F, 4.0F);
+        style.ItemSpacing = ImVec2(7.0F, 5.0F);
+        style.ItemInnerSpacing = ImVec2(6.0F, 4.0F);
+        style.IndentSpacing = 13.0F;
+        return;
+    }
+
+    style.WindowPadding = ImVec2(14.0F, 14.0F);
+    style.FramePadding = ImVec2(10.0F, 6.0F);
+    style.ItemSpacing = ImVec2(9.0F, 7.0F);
+    style.ItemInnerSpacing = ImVec2(8.0F, 5.0F);
+    style.IndentSpacing = 16.0F;
+}
+
 } // namespace ui

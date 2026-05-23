@@ -1,5 +1,7 @@
 #include "tools/uuid/UuidTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <array>
@@ -52,7 +54,7 @@ void UuidTool::draw()
 
     ImGui::SameLine();
     if (!generated_.empty() && ImGui::Button("Copy Latest")) {
-        ImGui::SetClipboardText(generated_.front().c_str());
+        ui::copyToClipboard(generated_.front().c_str());
     }
 
     ImGui::SameLine();
@@ -65,7 +67,7 @@ void UuidTool::draw()
     for (const std::string& value : generated_) {
         ImGui::PushID(value.c_str());
         if (ImGui::Button("Copy")) {
-            ImGui::SetClipboardText(value.c_str());
+            ui::copyToClipboard(value.c_str());
         }
         ImGui::SameLine();
         ImGui::TextUnformatted(value.c_str());

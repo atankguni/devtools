@@ -1,5 +1,7 @@
 #include "tools/text_diff/TextDiffTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <algorithm>
@@ -138,7 +140,7 @@ void TextDiffTool::draw()
     if (!diffOutput_.empty()) {
         ImGui::SameLine();
         if (ImGui::Button("Copy Diff")) {
-            ImGui::SetClipboardText(diffOutput_.c_str());
+            ui::copyToClipboard(diffOutput_.c_str());
             status_ = "Copied diff";
         }
     }

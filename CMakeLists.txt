@@ -52,8 +52,10 @@ add_executable(devtools
     src/app/Application.cpp
     src/core/ToolRegistry.cpp
     src/platform/SdlOpenGlWindow.cpp
+    src/ui/Clipboard.cpp
     src/ui/ImGuiLayer.cpp
     src/ui/Theme.cpp
+    src/ui/UiSettings.cpp
     src/ui/UiShell.cpp
     src/tools/json_formatter/JsonFormatterTool.cpp
     src/tools/base64/Base64Tool.cpp

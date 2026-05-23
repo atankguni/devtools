@@ -1,5 +1,7 @@
 #include "tools/timestamp/TimestampTool.hpp"
 
+#include "ui/Clipboard.hpp"
+
 #include <imgui.h>
 
 #include <charconv>
@@ -101,7 +103,7 @@ void TimestampTool::draw()
     if (!result_.empty()) {
         ImGui::Separator();
         if (ImGui::Button("Copy Output")) {
-            ImGui::SetClipboardText(result_.c_str());
+            ui::copyToClipboard(result_.c_str());
         }
         ImGui::TextUnformatted(result_.c_str());
     }

@@ -1,5 +1,6 @@
 #include "ui/UiShell.hpp"
 
+#include "ui/Clipboard.hpp"
 #include "ui/Theme.hpp"
 
 #include <imgui.h>
@@ -133,8 +134,45 @@ bool drawNavigationRow(std::string_view id, std::string_view name, std::string_v
     return pressed;
 }
 
-bool drawToolRow(const core::Tool& tool, bool selected, const ui::ThemePalette& palette)
+bool drawCompactNavigationRow(std::string_view id, std::string_view name, bool selected, const ui::ThemePalette& palette)
 {
+    ImGui::PushID(id.data(), id.data() + id.size());
+    const ImVec2 pos = ImGui::GetCursorScreenPos();
+    const ImVec2 size(ImGui::GetContentRegionAvail().x, 36.0F);
+    const bool pressed = ImGui::InvisibleButton("nav-row", size);
+    const bool hovered = ImGui::IsItemHovered();
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+    const ImU32 fill = selected ? palette.rowSelected : hovered ? palette.rowHovered
+                                                                : palette.row;
+    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), fill, 9.0F);
+    drawList->AddRect(
+        pos,
+        ImVec2(pos.x + size.x, pos.y + size.y),
+        selected ? palette.rowSelectedBorder : palette.border,
+        9.0F
+    );
+
+    if (selected) {
+        drawList->AddRectFilled(pos, ImVec2(pos.x + 3.0F, pos.y + size.y), palette.accent, 9.0F);
+    }
+
+    const ImVec2 textPos(pos.x + 12.0F, pos.y + 9.0F);
+    drawList->AddText(
+        textPos,
+        selected ? palette.rowSelectedText : palette.rowText,
+        name.data(),
+        name.data() + name.size()
+    );
+    ImGui::PopID();
+    return pressed;
+}
+
+bool drawToolRow(const core::Tool& tool, bool selected, const ui::ThemePalette& palette, bool showDescription)
+{
+    if (!showDescription) {
+        return drawCompactNavigationRow(tool.id, tool.name, selected, palette);
+    }
     return drawNavigationRow(tool.id, tool.name, tool.description, selected, palette);
 }
 
@@ -153,16 +191,57 @@ void drawPill(std::string_view text, const ui::ThemePalette& palette)
 
 namespace ui {
 
+void UiShell::loadSettings(const core::ToolRegistry& registry)
+{
+    settings_ = ui::loadSettings();
+
+    const auto tools = registry.tools();
+    if (tools.empty()) {
+        activeToolId_.clear();
+        return;
+    }
+
+    auto hasTool = [&](const std::string& id) {
+        return registry.findById(id) != nullptr;
+    };
+
+    if (settings_.startupBehavior == StartupBehavior::SpecificTool && hasTool(settings_.startupToolId)) {
+        activeToolId_ = settings_.startupToolId;
+    } else if (settings_.startupBehavior == StartupBehavior::LastTool && hasTool(settings_.lastActiveToolId)) {
+        activeToolId_ = settings_.lastActiveToolId;
+    } else {
+        activeToolId_ = tools.front().id;
+    }
+
+    settings_.lastActiveToolId = activeToolId_;
+    if (settings_.startupToolId.empty() || !hasTool(settings_.startupToolId)) {
+        settings_.startupToolId = tools.front().id;
+    }
+}
+
+void UiShell::saveSettings() const
+{
+    ui::saveSettings(settings_);
+}
+
 const UiSettings& UiShell::settings() const
 {
     return settings_;
+}
+
+void UiShell::selectTool(std::string_view toolId)
+{
+    activeToolId_ = std::string(toolId);
+    if (activeToolId_ != settingsToolId) {
+        settings_.lastActiveToolId = activeToolId_;
+    }
 }
 
 void UiShell::draw(const core::ToolRegistry& registry)
 {
     const auto tools = registry.tools();
     if (activeToolId_.empty() && !tools.empty()) {
-        activeToolId_ = tools.front().id;
+        selectTool(tools.front().id);
     }
 
     ImGuiIO& io = ImGui::GetIO();
@@ -215,6 +294,7 @@ void UiShell::draw(const core::ToolRegistry& registry)
     ImGui::PopStyleColor();
 
     drawCommandPalette(registry);
+    drawClipboardStatus();
 }
 
 void UiShell::drawSidebar(const core::ToolRegistry& registry)
@@ -227,21 +307,25 @@ void UiShell::drawSidebar(const core::ToolRegistry& registry)
     ImGui::Separator();
     ImGui::Spacing();
 
+    const bool showDescriptions = settings_.showSidebarDescriptions;
     for (const core::Tool& tool : registry.tools()) {
-        if (drawToolRow(tool, activeToolId_ == tool.id, palette)) {
-            activeToolId_ = tool.id;
+        if (drawToolRow(tool, activeToolId_ == tool.id, palette, showDescriptions)) {
+            selectTool(tool.id);
         }
         ImGui::Dummy(ImVec2(0.0F, 4.0F));
     }
 
-    const float footerY = ImGui::GetWindowHeight() - 112.0F;
+    const float footerY = ImGui::GetWindowHeight() - (showDescriptions ? 112.0F : 100.0F);
     if (footerY > ImGui::GetCursorPosY()) {
         ImGui::SetCursorPosY(footerY);
     }
     ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0F, 4.0F));
-    if (drawNavigationRow(settingsToolId, "Settings", "Theme, font, and size.", activeToolId_ == settingsToolId, palette)) {
-        activeToolId_ = std::string(settingsToolId);
+    const bool settingsPressed = showDescriptions
+        ? drawNavigationRow(settingsToolId, "Settings", "Theme, font, and size.", activeToolId_ == settingsToolId, palette)
+        : drawCompactNavigationRow(settingsToolId, "Settings", activeToolId_ == settingsToolId, palette);
+    if (settingsPressed) {
+        selectTool(settingsToolId);
     }
     ImGui::Dummy(ImVec2(0.0F, 4.0F));
     ImGui::Separator();
@@ -255,7 +339,7 @@ void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
 {
     const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
     if (activeToolId_ == settingsToolId) {
-        drawSettings();
+        drawSettings(registry);
         return;
     }
 
@@ -287,7 +371,7 @@ void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
     ImGui::PopStyleColor();
 }
 
-void UiShell::drawSettings()
+void UiShell::drawSettings(const core::ToolRegistry& registry)
 {
     const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
 
@@ -332,12 +416,85 @@ void UiShell::drawSettings()
         ImGui::SetNextItemWidth(260.0F);
         ImGui::SliderFloat("Size", &settings_.fontSize, 12.0F, 22.0F, "%.0f px", ImGuiSliderFlags_AlwaysClamp);
 
+        int densityIndex = static_cast<int>(settings_.density);
+        constexpr const char* densityOptions[] = { "Comfortable", "Compact" };
+        ImGui::SetNextItemWidth(260.0F);
+        if (ImGui::Combo("Density", &densityIndex, densityOptions, IM_ARRAYSIZE(densityOptions))) {
+            settings_.density = static_cast<UiDensity>(densityIndex);
+        }
+
+        ImGui::Checkbox("Show sidebar descriptions", &settings_.showSidebarDescriptions);
+
+        ImGui::Dummy(ImVec2(0.0F, 10.0F));
+        ImGui::TextUnformatted("Startup");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+
+        int startupIndex = static_cast<int>(settings_.startupBehavior);
+        constexpr const char* startupOptions[] = { "Last opened tool", "Specific tool", "First tool" };
+        ImGui::SetNextItemWidth(260.0F);
+        if (ImGui::Combo("Open on startup", &startupIndex, startupOptions, IM_ARRAYSIZE(startupOptions))) {
+            settings_.startupBehavior = static_cast<StartupBehavior>(startupIndex);
+        }
+
+        if (settings_.startupBehavior == StartupBehavior::SpecificTool) {
+            ImGui::SetNextItemWidth(260.0F);
+            const core::Tool* startupTool = registry.findById(settings_.startupToolId);
+            const char* currentToolLabel = startupTool == nullptr ? "Choose tool" : startupTool->name.c_str();
+            if (ImGui::BeginCombo("Startup tool", currentToolLabel)) {
+                for (const core::Tool& tool : registry.tools()) {
+                    const bool selected = settings_.startupToolId == tool.id;
+                    if (ImGui::Selectable(tool.name.c_str(), selected)) {
+                        settings_.startupToolId = tool.id;
+                    }
+                    if (selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::SameLine();
+            if (!activeToolId_.empty() && activeToolId_ != settingsToolId && ImGui::Button("Set Current")) {
+                settings_.startupToolId = activeToolId_;
+            }
+        }
+
+        ImGui::Checkbox("Include Settings in command palette", &settings_.includeSettingsInCommandPalette);
+
+        ImGui::Dummy(ImVec2(0.0F, 10.0F));
+        ImGui::TextUnformatted("Clipboard");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+
+        ImGui::Checkbox("Show copy confirmation", &settings_.showCopyConfirmation);
+        ImGui::Checkbox("Auto-copy generated output", &settings_.autoCopyGeneratedOutput);
+
+        ImGui::Dummy(ImVec2(0.0F, 10.0F));
+        ImGui::TextUnformatted("Editor");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+
+        ImGui::Checkbox("Soft wrap text", &settings_.softWrapText);
+        ImGui::Checkbox("Use spaces for tabs", &settings_.useSpacesForTabs);
+        ImGui::Checkbox("Confirm before clearing input", &settings_.confirmBeforeClearingInput);
+        ImGui::SetNextItemWidth(260.0F);
+        ImGui::SliderInt("Tab width", &settings_.tabWidth, 2, 8, "%d spaces", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::Dummy(ImVec2(0.0F, 10.0F));
+        ImGui::TextUnformatted("Privacy");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+
+        ImGui::Checkbox("Never store tool inputs", &settings_.neverStoreToolInputs);
+        ImGui::Checkbox("Clear inputs on exit", &settings_.clearInputsOnExit);
+
         ImGui::Dummy(ImVec2(0.0F, 8.0F));
         ImGui::TextDisabled(
-            "Current: %s theme, %s font, %.0f px",
+            "Current: %s theme, %s font, %.0f px, %s density",
             themeModeLabel(settings_.themeMode),
             fontFamilyLabel(settings_.fontFamily),
-            settings_.fontSize
+            settings_.fontSize,
+            uiDensityLabel(settings_.density)
         );
     }
     ImGui::EndChild();
@@ -383,8 +540,26 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
             }
 
             ++resultCount;
-            if (drawToolRow(tool, activeToolId_ == tool.id, palette)) {
-                activeToolId_ = tool.id;
+            if (drawToolRow(tool, activeToolId_ == tool.id, palette, true)) {
+                selectTool(tool.id);
+                commandPaletteOpen_ = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::Dummy(ImVec2(0.0F, 4.0F));
+        }
+
+        if (settings_.includeSettingsInCommandPalette
+            && (containsCaseInsensitive("Settings", query)
+                || containsCaseInsensitive("Theme, font, startup, privacy, and editor preferences.", query))) {
+            ++resultCount;
+            if (drawNavigationRow(
+                    settingsToolId,
+                    "Settings",
+                    "Theme, font, startup, privacy, and editor preferences.",
+                    activeToolId_ == settingsToolId,
+                    palette
+                )) {
+                selectTool(settingsToolId);
                 commandPaletteOpen_ = false;
                 ImGui::CloseCurrentPopup();
             }
