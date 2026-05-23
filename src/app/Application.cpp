@@ -71,6 +71,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "hash",
+        .name = "Hash Generator",
+        .description = "Generate common hashes.",
+        .draw = [this] { hash_.draw(); },
+    });
+
+    registry_.add({
         .id = "jwt",
         .name = "JWT",
         .description = "Encode and decode JWTs.",
