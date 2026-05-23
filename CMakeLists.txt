@@ -69,6 +69,7 @@ add_executable(devtools
     src/tools/password/PasswordTool.cpp
     src/tools/permissions/PermissionsTool.cpp
     src/tools/regex/RegexTool.cpp
+    src/tools/sql_formatter/SqlFormatterTool.cpp
     src/tools/test_data/TestDataTool.cpp
     src/tools/text_diff/TextDiffTool.cpp
     src/tools/url/UrlTool.cpp

@@ -144,6 +144,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "sql_formatter",
+        .name = "SQL Formatter",
+        .description = "Beautify and minify SQL.",
+        .draw = [this] { sqlFormatter_.draw(); },
+    });
+
+    registry_.add({
         .id = "test_data",
         .name = "Test Data",
         .description = "Generate sample data.",

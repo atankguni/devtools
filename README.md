@@ -38,6 +38,7 @@ project-root/
 │   │   ├── password/
 │   │   ├── permissions/
 │   │   ├── regex/
+│   │   ├── sql_formatter/
 │   │   ├── test_data/
 │   │   ├── text_diff/
 │   │   ├── timestamp/
@@ -170,6 +171,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 - Password: generates passwords and checks password strength.
 - Permissions: converts chmod octal and symbolic permissions.
 - Regex Tester: tests regular expressions and captures matches.
+- SQL Formatter: beautifies and minifies SQL with configurable indentation.
 - Test Data: generates local sample names, emails, and JSON objects.
 - Text Diff: compares two text blocks with unified diff-style output.
 - URL: percent-encodes and decodes URL text.

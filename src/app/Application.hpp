@@ -14,6 +14,7 @@
 #include "tools/password/PasswordTool.hpp"
 #include "tools/permissions/PermissionsTool.hpp"
 #include "tools/regex/RegexTool.hpp"
+#include "tools/sql_formatter/SqlFormatterTool.hpp"
 #include "tools/test_data/TestDataTool.hpp"
 #include "tools/text_diff/TextDiffTool.hpp"
 #include "tools/timestamp/TimestampTool.hpp"
@@ -50,6 +51,7 @@ private:
     tools::password::PasswordTool password_;
     tools::permissions::PermissionsTool permissions_;
     tools::regex_tool::RegexTool regex_;
+    tools::sql_formatter::SqlFormatterTool sqlFormatter_;
     tools::test_data::TestDataTool testData_;
     tools::text_diff::TextDiffTool textDiff_;
     tools::url::UrlTool url_;
