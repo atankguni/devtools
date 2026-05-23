@@ -57,10 +57,18 @@ add_executable(devtools
     src/ui/UiShell.cpp
     src/tools/json_formatter/JsonFormatterTool.cpp
     src/tools/base64/Base64Tool.cpp
+    src/tools/case_converter/CaseConverterTool.cpp
+    src/tools/color/ColorTool.cpp
+    src/tools/cron/CronTool.cpp
     src/tools/hash/HashTool.cpp
     src/tools/jwt/JwtTool.cpp
+    src/tools/markup/MarkupTool.cpp
     src/tools/password/PasswordTool.cpp
+    src/tools/permissions/PermissionsTool.cpp
+    src/tools/regex/RegexTool.cpp
+    src/tools/test_data/TestDataTool.cpp
     src/tools/text_diff/TextDiffTool.cpp
+    src/tools/url/UrlTool.cpp
     src/tools/uuid/UuidTool.cpp
     src/tools/timestamp/TimestampTool.cpp
 )

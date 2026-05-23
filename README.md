@@ -27,12 +27,20 @@ project-root/
 │   ├── ui/
 │   ├── tools/
 │   │   ├── base64/
+│   │   ├── case_converter/
+│   │   ├── color/
+│   │   ├── cron/
 │   │   ├── hash/
 │   │   ├── json_formatter/
 │   │   ├── jwt/
+│   │   ├── markup/
 │   │   ├── password/
+│   │   ├── permissions/
+│   │   ├── regex/
+│   │   ├── test_data/
 │   │   ├── text_diff/
 │   │   ├── timestamp/
+│   │   ├── url/
 │   │   └── uuid/
 │   ├── platform/
 │   └── main.cpp
@@ -151,10 +159,18 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
 - JSON Formatter: validates and formats JSON using a small local parser.
 - Base64: encodes and decodes text.
+- Case Converter: converts text to common identifier and title cases.
+- Color Converter: converts HEX, RGB, HSL, and HSV values.
+- Cron Helper: previews upcoming run times for simple cron expressions.
 - Hash Generator: generates MD5, SHA-1, SHA-256, SHA-384, and SHA-512 digests.
+- HTML / XML: formats and minifies markup text.
 - JWT: encodes unsigned tokens and decodes JWT header and payload data.
 - Password: generates passwords and checks password strength.
+- Permissions: converts chmod octal and symbolic permissions.
+- Regex Tester: tests regular expressions and captures matches.
+- Test Data: generates local sample names, emails, and JSON objects.
 - Text Diff: compares two text blocks with unified diff-style output.
+- URL: percent-encodes and decodes URL text.
 - UUID Generator: generates UUID v4 values.
 - Timestamp Converter: converts Unix timestamps to local time.
 
