@@ -1,5 +1,7 @@
 #include "ui/UiShell.hpp"
 
+#include "ui/Theme.hpp"
+
 #include <imgui.h>
 
 #include <algorithm>
@@ -11,13 +13,7 @@ namespace {
 constexpr float outerPadding = 12.0F;
 constexpr float panelGap = 10.0F;
 constexpr float sidebarWidth = 244.0F;
-constexpr ImU32 backgroundTop = IM_COL32(10, 15, 22, 255);
-constexpr ImU32 backgroundBottom = IM_COL32(14, 24, 34, 255);
-constexpr ImU32 panelColor = IM_COL32(18, 26, 36, 238);
-constexpr ImU32 surfaceColor = IM_COL32(14, 22, 32, 255);
-constexpr ImU32 borderColor = IM_COL32(56, 76, 96, 150);
-constexpr ImU32 accentColor = IM_COL32(67, 176, 255, 255);
-constexpr ImU32 accentMutedColor = IM_COL32(67, 176, 255, 42);
+constexpr std::string_view settingsToolId = "__settings";
 
 bool containsCaseInsensitive(std::string_view text, std::string_view query)
 {
@@ -47,36 +43,43 @@ bool containsCaseInsensitive(std::string_view text, std::string_view query)
     return false;
 }
 
-void drawViewportBackground(ImGuiViewport* viewport)
+void drawViewportBackground(ImGuiViewport* viewport, const ui::ThemePalette& palette)
 {
     ImDrawList* drawList = ImGui::GetBackgroundDrawList(viewport);
     const ImVec2 min = viewport->WorkPos;
     const ImVec2 max(viewport->WorkPos.x + viewport->WorkSize.x, viewport->WorkPos.y + viewport->WorkSize.y);
-    drawList->AddRectFilledMultiColor(min, max, backgroundTop, backgroundTop, backgroundBottom, backgroundBottom);
+    drawList->AddRectFilledMultiColor(
+        min,
+        max,
+        palette.backgroundTop,
+        palette.backgroundTop,
+        palette.backgroundBottom,
+        palette.backgroundBottom
+    );
     drawList->AddRectFilled(
         ImVec2(min.x, min.y),
         ImVec2(max.x, min.y + 92.0F),
-        IM_COL32(20, 34, 48, 62)
+        palette.backgroundOverlay
     );
 }
 
-void drawPanelBorder()
+void drawPanelBorder(const ui::ThemePalette& palette)
 {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     const ImVec2 min = ImGui::GetWindowPos();
     const ImVec2 max(min.x + ImGui::GetWindowWidth(), min.y + ImGui::GetWindowHeight());
-    drawList->AddRect(min, max, borderColor, 10.0F, 0, 1.0F);
+    drawList->AddRect(min, max, palette.border, 10.0F, 0, 1.0F);
 }
 
-void drawBrand()
+void drawBrand(const ui::ThemePalette& palette)
 {
     const ImVec2 start = ImGui::GetCursorScreenPos();
     ImDrawList* drawList = ImGui::GetWindowDrawList();
-    drawList->AddRectFilled(start, ImVec2(start.x + 34.0F, start.y + 34.0F), IM_COL32(31, 120, 190, 255), 9.0F);
+    drawList->AddRectFilled(start, ImVec2(start.x + 34.0F, start.y + 34.0F), palette.brandOuter, 9.0F);
     drawList->AddRectFilled(
         ImVec2(start.x + 8.0F, start.y + 8.0F),
         ImVec2(start.x + 26.0F, start.y + 26.0F),
-        IM_COL32(108, 210, 255, 255),
+        palette.brandInner,
         6.0F
     );
 
@@ -90,46 +93,70 @@ void drawBrand()
     ImGui::EndGroup();
 }
 
-bool drawToolRow(const core::Tool& tool, bool selected)
+bool drawNavigationRow(std::string_view id, std::string_view name, std::string_view description, bool selected, const ui::ThemePalette& palette)
 {
-    ImGui::PushID(tool.id.c_str());
+    ImGui::PushID(id.data(), id.data() + id.size());
     const ImVec2 pos = ImGui::GetCursorScreenPos();
     const ImVec2 size(ImGui::GetContentRegionAvail().x, 48.0F);
-    const bool pressed = ImGui::InvisibleButton("tool-row", size);
+    const bool pressed = ImGui::InvisibleButton("nav-row", size);
     const bool hovered = ImGui::IsItemHovered();
 
     ImDrawList* drawList = ImGui::GetWindowDrawList();
-    const ImU32 fill = selected ? IM_COL32(22, 58, 82, 230)
-        : hovered ? IM_COL32(26, 38, 52, 230)
-                  : IM_COL32(16, 24, 34, 110);
+    const ImU32 fill = selected ? palette.rowSelected : hovered ? palette.rowHovered
+                                                                : palette.row;
     drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), fill, 9.0F);
-    drawList->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), selected ? IM_COL32(70, 176, 255, 150) : borderColor, 9.0F);
+    drawList->AddRect(
+        pos,
+        ImVec2(pos.x + size.x, pos.y + size.y),
+        selected ? palette.rowSelectedBorder : palette.border,
+        9.0F
+    );
 
     if (selected) {
-        drawList->AddRectFilled(pos, ImVec2(pos.x + 3.0F, pos.y + size.y), accentColor, 9.0F);
+        drawList->AddRectFilled(pos, ImVec2(pos.x + 3.0F, pos.y + size.y), palette.accent, 9.0F);
     }
 
     const ImVec2 textPos(pos.x + 12.0F, pos.y + 7.0F);
-    drawList->AddText(textPos, selected ? IM_COL32(236, 248, 255, 255) : IM_COL32(220, 228, 236, 255), tool.name.c_str());
-    drawList->AddText(ImVec2(textPos.x, textPos.y + 20.0F), IM_COL32(137, 151, 166, 255), tool.description.c_str());
+    drawList->AddText(
+        textPos,
+        selected ? palette.rowSelectedText : palette.rowText,
+        name.data(),
+        name.data() + name.size()
+    );
+    drawList->AddText(
+        ImVec2(textPos.x, textPos.y + 20.0F),
+        palette.rowDescription,
+        description.data(),
+        description.data() + description.size()
+    );
     ImGui::PopID();
     return pressed;
 }
 
-void drawPill(std::string_view text)
+bool drawToolRow(const core::Tool& tool, bool selected, const ui::ThemePalette& palette)
+{
+    return drawNavigationRow(tool.id, tool.name, tool.description, selected, palette);
+}
+
+void drawPill(std::string_view text, const ui::ThemePalette& palette)
 {
     const ImVec2 pos = ImGui::GetCursorScreenPos();
     const ImVec2 textSize = ImGui::CalcTextSize(text.data(), text.data() + text.size());
     const ImVec2 size(textSize.x + 18.0F, 22.0F);
     ImGui::Dummy(size);
     ImDrawList* drawList = ImGui::GetWindowDrawList();
-    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), accentMutedColor, 11.0F);
-    drawList->AddText(ImVec2(pos.x + 9.0F, pos.y + 3.0F), IM_COL32(139, 217, 255, 255), text.data(), text.data() + text.size());
+    drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), palette.accentMuted, 11.0F);
+    drawList->AddText(ImVec2(pos.x + 9.0F, pos.y + 3.0F), palette.pillText, text.data(), text.data() + text.size());
 }
 
 } // namespace
 
 namespace ui {
+
+const UiSettings& UiShell::settings() const
+{
+    return settings_;
+}
 
 void UiShell::draw(const core::ToolRegistry& registry)
 {
@@ -144,8 +171,9 @@ void UiShell::draw(const core::ToolRegistry& registry)
         ImGui::OpenPopup("Command Palette");
     }
 
+    const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
     ImGuiViewport* viewport = ImGui::GetMainViewport();
-    drawViewportBackground(viewport);
+    drawViewportBackground(viewport, palette);
 
     const ImVec2 sidebarPos(viewport->WorkPos.x + outerPadding, viewport->WorkPos.y + outerPadding);
     const ImVec2 sidebarSize(sidebarWidth, std::max(320.0F, viewport->WorkSize.y - (outerPadding * 2.0F)));
@@ -164,10 +192,10 @@ void UiShell::draw(const core::ToolRegistry& registry)
 
     ImGui::SetNextWindowPos(sidebarPos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(sidebarSize, ImGuiCond_Always);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGui::ColorConvertU32ToFloat4(panelColor));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGui::ColorConvertU32ToFloat4(palette.panel));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(13.0F, 13.0F));
     if (ImGui::Begin("DevTools Sidebar", nullptr, panelFlags)) {
-        drawPanelBorder();
+        drawPanelBorder(palette);
         drawSidebar(registry);
     }
     ImGui::End();
@@ -176,10 +204,10 @@ void UiShell::draw(const core::ToolRegistry& registry)
 
     ImGui::SetNextWindowPos(workspacePos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(workspaceSize, ImGuiCond_Always);
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGui::ColorConvertU32ToFloat4(panelColor));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGui::ColorConvertU32ToFloat4(palette.panel));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0F, 16.0F));
     if (ImGui::Begin("DevTools Workspace", nullptr, panelFlags)) {
-        drawPanelBorder();
+        drawPanelBorder(palette);
         drawCurrentTool(registry);
     }
     ImGui::End();
@@ -191,7 +219,8 @@ void UiShell::draw(const core::ToolRegistry& registry)
 
 void UiShell::drawSidebar(const core::ToolRegistry& registry)
 {
-    drawBrand();
+    const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
+    drawBrand(palette);
     ImGui::Dummy(ImVec2(0.0F, 10.0F));
 
     ImGui::TextDisabled("TOOLS");
@@ -199,32 +228,44 @@ void UiShell::drawSidebar(const core::ToolRegistry& registry)
     ImGui::Spacing();
 
     for (const core::Tool& tool : registry.tools()) {
-        if (drawToolRow(tool, activeToolId_ == tool.id)) {
+        if (drawToolRow(tool, activeToolId_ == tool.id, palette)) {
             activeToolId_ = tool.id;
         }
         ImGui::Dummy(ImVec2(0.0F, 4.0F));
     }
 
-    const float footerY = ImGui::GetWindowHeight() - 56.0F;
+    const float footerY = ImGui::GetWindowHeight() - 112.0F;
     if (footerY > ImGui::GetCursorPosY()) {
         ImGui::SetCursorPosY(footerY);
     }
     ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0F, 4.0F));
+    if (drawNavigationRow(settingsToolId, "Settings", "Theme, font, and size.", activeToolId_ == settingsToolId, palette)) {
+        activeToolId_ = std::string(settingsToolId);
+    }
+    ImGui::Dummy(ImVec2(0.0F, 4.0F));
+    ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0F, 2.0F));
-    drawPill("Cmd/Ctrl+P");
+    drawPill("Cmd/Ctrl+P", palette);
     ImGui::SameLine();
     ImGui::TextDisabled("Open command palette");
 }
 
 void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
 {
+    const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
+    if (activeToolId_ == settingsToolId) {
+        drawSettings();
+        return;
+    }
+
     const core::Tool* activeTool = registry.findById(activeToolId_);
     if (activeTool == nullptr) {
         ImGui::TextDisabled("No tool selected.");
         return;
     }
 
-    drawPill("Active tool");
+    drawPill("Active tool", palette);
     ImGui::SameLine();
     ImGui::TextDisabled("%s", activeTool->description.c_str());
     ImGui::Dummy(ImVec2(0.0F, 3.0F));
@@ -235,11 +276,69 @@ void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
     ImGui::TextDisabled("%s", activeTool->description.c_str());
     ImGui::Dummy(ImVec2(0.0F, 6.0F));
 
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(surfaceColor));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(palette.surface));
     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0F);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(13.0F, 13.0F));
     if (ImGui::BeginChild("Tool Surface", ImVec2(0.0F, 0.0F), true)) {
         activeTool->draw();
+    }
+    ImGui::EndChild();
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor();
+}
+
+void UiShell::drawSettings()
+{
+    const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
+
+    drawPill("Settings", palette);
+    ImGui::SameLine();
+    ImGui::TextDisabled("Theme and typography.");
+    ImGui::Dummy(ImVec2(0.0F, 3.0F));
+
+    ImGui::SetWindowFontScale(1.14F);
+    ImGui::TextUnformatted("Settings");
+    ImGui::SetWindowFontScale(1.0F);
+    ImGui::TextDisabled("Adjust the application appearance.");
+    ImGui::Dummy(ImVec2(0.0F, 6.0F));
+
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(palette.surface));
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0F);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(13.0F, 13.0F));
+    if (ImGui::BeginChild("Settings Surface", ImVec2(0.0F, 0.0F), true)) {
+        ImGui::TextUnformatted("Appearance");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+
+        int themeIndex = static_cast<int>(settings_.themeMode);
+        constexpr const char* themeOptions[] = { "Follow system", "Light", "Dark" };
+        ImGui::SetNextItemWidth(260.0F);
+        if (ImGui::Combo("Theme", &themeIndex, themeOptions, IM_ARRAYSIZE(themeOptions))) {
+            settings_.themeMode = static_cast<ThemeMode>(themeIndex);
+        }
+
+        ImGui::Dummy(ImVec2(0.0F, 10.0F));
+        ImGui::TextUnformatted("Typography");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+
+        int fontIndex = static_cast<int>(settings_.fontFamily);
+        constexpr const char* fontOptions[] = { "System", "Monospace", "Serif", "Classic" };
+        ImGui::SetNextItemWidth(260.0F);
+        if (ImGui::Combo("Font", &fontIndex, fontOptions, IM_ARRAYSIZE(fontOptions))) {
+            settings_.fontFamily = static_cast<FontFamily>(fontIndex);
+        }
+
+        ImGui::SetNextItemWidth(260.0F);
+        ImGui::SliderFloat("Size", &settings_.fontSize, 12.0F, 22.0F, "%.0f px", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::Dummy(ImVec2(0.0F, 8.0F));
+        ImGui::TextDisabled(
+            "Current: %s theme, %s font, %.0f px",
+            themeModeLabel(settings_.themeMode),
+            fontFamilyLabel(settings_.fontFamily),
+            settings_.fontSize
+        );
     }
     ImGui::EndChild();
     ImGui::PopStyleVar(2);
@@ -264,7 +363,8 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
     );
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14.0F, 14.0F));
     if (ImGui::BeginPopupModal("Command Palette", &commandPaletteOpen_, ImGuiWindowFlags_NoSavedSettings)) {
-        drawPanelBorder();
+        const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
+        drawPanelBorder(palette);
         ImGui::SetWindowFontScale(1.06F);
         ImGui::TextUnformatted("Command Palette");
         ImGui::SetWindowFontScale(1.0F);
@@ -283,7 +383,7 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
             }
 
             ++resultCount;
-            if (drawToolRow(tool, activeToolId_ == tool.id)) {
+            if (drawToolRow(tool, activeToolId_ == tool.id, palette)) {
                 activeToolId_ = tool.id;
                 commandPaletteOpen_ = false;
                 ImGui::CloseCurrentPopup();

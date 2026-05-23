@@ -36,6 +36,7 @@ int Application::run()
             }
         }
 
+        imgui_.applySettings(shell_.settings());
         imgui_.beginFrame();
         shell_.draw(registry_);
 

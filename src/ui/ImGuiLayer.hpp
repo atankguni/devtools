@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ui/UiSettings.hpp"
+
 #include <SDL.h>
 
 namespace ui {
@@ -13,8 +15,15 @@ public:
     ImGuiLayer& operator=(const ImGuiLayer&) = delete;
 
     void handleEvent(const SDL_Event& event);
+    void applySettings(const UiSettings& settings);
     void beginFrame();
     void render();
+
+private:
+    void loadFont(FontFamily family, float size);
+
+    FontFamily loadedFontFamily_ = FontFamily::System;
+    float loadedFontSize_ = 15.0F;
 };
 
 } // namespace ui
