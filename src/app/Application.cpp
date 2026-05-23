@@ -59,7 +59,7 @@ void Application::registerTools()
     registry_.add({
         .id = "json_formatter",
         .name = "JSON Formatter",
-        .description = "Format and validate JSON without external parsers.",
+        .description = "Format and validate JSON.",
         .draw = [this] { jsonFormatter_.draw(); },
     });
 
@@ -80,7 +80,7 @@ void Application::registerTools()
     registry_.add({
         .id = "timestamp",
         .name = "Timestamp Converter",
-        .description = "Convert Unix timestamps to local time.",
+        .description = "Convert Unix timestamps.",
         .draw = [this] { timestamp_.draw(); },
     });
 }
