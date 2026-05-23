@@ -6,6 +6,7 @@
 #include "tools/hash/HashTool.hpp"
 #include "tools/json_formatter/JsonFormatterTool.hpp"
 #include "tools/jwt/JwtTool.hpp"
+#include "tools/password/PasswordTool.hpp"
 #include "tools/timestamp/TimestampTool.hpp"
 #include "tools/uuid/UuidTool.hpp"
 #include "ui/ImGuiLayer.hpp"
@@ -31,6 +32,7 @@ private:
     tools::base64::Base64Tool base64_;
     tools::hash::HashTool hash_;
     tools::jwt::JwtTool jwt_;
+    tools::password::PasswordTool password_;
     tools::uuid::UuidTool uuid_;
     tools::timestamp::TimestampTool timestamp_;
 };

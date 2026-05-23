@@ -59,6 +59,7 @@ add_executable(devtools
     src/tools/base64/Base64Tool.cpp
     src/tools/hash/HashTool.cpp
     src/tools/jwt/JwtTool.cpp
+    src/tools/password/PasswordTool.cpp
     src/tools/uuid/UuidTool.cpp
     src/tools/timestamp/TimestampTool.cpp
 )

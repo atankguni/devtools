@@ -85,6 +85,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "password",
+        .name = "Password",
+        .description = "Generate and check passwords.",
+        .draw = [this] { password_.draw(); },
+    });
+
+    registry_.add({
         .id = "uuid",
         .name = "UUID Generator",
         .description = "Generate UUID v4 identifiers.",
