@@ -71,6 +71,27 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "case_converter",
+        .name = "Case Converter",
+        .description = "Convert text casing.",
+        .draw = [this] { caseConverter_.draw(); },
+    });
+
+    registry_.add({
+        .id = "color",
+        .name = "Color Converter",
+        .description = "Convert color values.",
+        .draw = [this] { color_.draw(); },
+    });
+
+    registry_.add({
+        .id = "cron",
+        .name = "Cron Helper",
+        .description = "Preview cron schedules.",
+        .draw = [this] { cron_.draw(); },
+    });
+
+    registry_.add({
         .id = "hash",
         .name = "Hash Generator",
         .description = "Generate common hashes.",
@@ -85,6 +106,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "markup",
+        .name = "HTML / XML",
+        .description = "Format markup text.",
+        .draw = [this] { markup_.draw(); },
+    });
+
+    registry_.add({
         .id = "password",
         .name = "Password",
         .description = "Generate and check passwords.",
@@ -92,10 +120,38 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "permissions",
+        .name = "Permissions",
+        .description = "Calculate chmod values.",
+        .draw = [this] { permissions_.draw(); },
+    });
+
+    registry_.add({
+        .id = "regex",
+        .name = "Regex Tester",
+        .description = "Test regex patterns.",
+        .draw = [this] { regex_.draw(); },
+    });
+
+    registry_.add({
+        .id = "test_data",
+        .name = "Test Data",
+        .description = "Generate sample data.",
+        .draw = [this] { testData_.draw(); },
+    });
+
+    registry_.add({
         .id = "text_diff",
         .name = "Text Diff",
         .description = "Compare two text blocks.",
         .draw = [this] { textDiff_.draw(); },
+    });
+
+    registry_.add({
+        .id = "url",
+        .name = "URL",
+        .description = "Encode and decode URLs.",
+        .draw = [this] { url_.draw(); },
     });
 
     registry_.add({
