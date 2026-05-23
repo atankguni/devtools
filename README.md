@@ -34,6 +34,7 @@ project-root/
 │   │   ├── json_formatter/
 │   │   ├── jwt/
 │   │   ├── markup/
+│   │   ├── number_base/
 │   │   ├── password/
 │   │   ├── permissions/
 │   │   ├── regex/
@@ -165,6 +166,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 - Hash Generator: generates MD5, SHA-1, SHA-256, SHA-384, and SHA-512 digests.
 - HTML / XML: formats and minifies markup text.
 - JWT: encodes unsigned tokens and decodes JWT header and payload data.
+- Number Base: converts decimal, octal, hexadecimal, and binary values.
 - Password: generates passwords and checks password strength.
 - Permissions: converts chmod octal and symbolic permissions.
 - Regex Tester: tests regular expressions and captures matches.
