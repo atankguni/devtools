@@ -71,6 +71,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "jwt",
+        .name = "JWT",
+        .description = "Encode and decode JWTs.",
+        .draw = [this] { jwt_.draw(); },
+    });
+
+    registry_.add({
         .id = "uuid",
         .name = "UUID Generator",
         .description = "Generate UUID v4 identifiers.",

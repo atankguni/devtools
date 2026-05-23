@@ -4,6 +4,7 @@
 #include "platform/SdlOpenGlWindow.hpp"
 #include "tools/base64/Base64Tool.hpp"
 #include "tools/json_formatter/JsonFormatterTool.hpp"
+#include "tools/jwt/JwtTool.hpp"
 #include "tools/timestamp/TimestampTool.hpp"
 #include "tools/uuid/UuidTool.hpp"
 #include "ui/ImGuiLayer.hpp"
@@ -27,6 +28,7 @@ private:
 
     tools::json_formatter::JsonFormatterTool jsonFormatter_;
     tools::base64::Base64Tool base64_;
+    tools::jwt::JwtTool jwt_;
     tools::uuid::UuidTool uuid_;
     tools::timestamp::TimestampTool timestamp_;
 };
