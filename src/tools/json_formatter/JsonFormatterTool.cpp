@@ -418,6 +418,13 @@ void JsonFormatterTool::draw()
 
     ImGui::Separator();
     ImGui::TextUnformatted("Output");
+    if (!output_.empty()) {
+        ImGui::SameLine();
+        if (ImGui::Button("Copy Output")) {
+            ImGui::SetClipboardText(output_.c_str());
+            status_ = "Copied output";
+        }
+    }
 
     std::vector<char> outputBuffer(output_.begin(), output_.end());
     outputBuffer.push_back('\0');

@@ -51,6 +51,11 @@ void UuidTool::draw()
     }
 
     ImGui::SameLine();
+    if (!generated_.empty() && ImGui::Button("Copy Latest")) {
+        ImGui::SetClipboardText(generated_.front().c_str());
+    }
+
+    ImGui::SameLine();
     if (ImGui::Button("Clear History")) {
         generated_.clear();
     }
@@ -58,7 +63,13 @@ void UuidTool::draw()
     ImGui::Separator();
 
     for (const std::string& value : generated_) {
+        ImGui::PushID(value.c_str());
+        if (ImGui::Button("Copy")) {
+            ImGui::SetClipboardText(value.c_str());
+        }
+        ImGui::SameLine();
         ImGui::TextUnformatted(value.c_str());
+        ImGui::PopID();
     }
 }
 
