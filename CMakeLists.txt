@@ -65,6 +65,7 @@ add_executable(devtools
     src/tools/hash/HashTool.cpp
     src/tools/jwt/JwtTool.cpp
     src/tools/markup/MarkupTool.cpp
+    src/tools/number_base/NumberBaseTool.cpp
     src/tools/password/PasswordTool.cpp
     src/tools/permissions/PermissionsTool.cpp
     src/tools/regex/RegexTool.cpp

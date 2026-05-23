@@ -116,6 +116,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "number_base",
+        .name = "Number Base",
+        .description = "Convert number bases.",
+        .draw = [this] { numberBase_.draw(); },
+    });
+
+    registry_.add({
         .id = "password",
         .name = "Password",
         .description = "Generate and check passwords.",

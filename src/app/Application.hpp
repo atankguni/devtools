@@ -10,6 +10,7 @@
 #include "tools/json_formatter/JsonFormatterTool.hpp"
 #include "tools/jwt/JwtTool.hpp"
 #include "tools/markup/MarkupTool.hpp"
+#include "tools/number_base/NumberBaseTool.hpp"
 #include "tools/password/PasswordTool.hpp"
 #include "tools/permissions/PermissionsTool.hpp"
 #include "tools/regex/RegexTool.hpp"
@@ -45,6 +46,7 @@ private:
     tools::hash::HashTool hash_;
     tools::jwt::JwtTool jwt_;
     tools::markup::MarkupTool markup_;
+    tools::number_base::NumberBaseTool numberBase_;
     tools::password::PasswordTool password_;
     tools::permissions::PermissionsTool permissions_;
     tools::regex_tool::RegexTool regex_;
