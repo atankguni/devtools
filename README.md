@@ -26,10 +26,14 @@ project-root/
 │   ├── core/
 │   ├── ui/
 │   ├── tools/
-│   │   ├── json_formatter/
 │   │   ├── base64/
-│   │   ├── uuid/
-│   │   └── timestamp/
+│   │   ├── hash/
+│   │   ├── json_formatter/
+│   │   ├── jwt/
+│   │   ├── password/
+│   │   ├── text_diff/
+│   │   ├── timestamp/
+│   │   └── uuid/
 │   ├── platform/
 │   └── main.cpp
 ├── assets/
@@ -59,25 +63,88 @@ Expected ImGui backend files:
 - `external/imgui/backends/imgui_impl_sdl2.cpp`
 - `external/imgui/backends/imgui_impl_opengl3.cpp`
 
-No package manager is required by the project itself.
+No package manager is required by the project itself. You still need a C++23
+compiler, CMake, Git, and normal platform SDK/OpenGL development files.
 
-## Build
+## Build: macOS
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
 
-Run the executable:
-
 ```sh
 ./build/devtools
 ```
 
-On Windows with a multi-config generator, the executable is usually under:
+Recommended prerequisites:
+
+```sh
+xcode-select --install
+brew install cmake git
+```
+
+`brew` is optional if you already have CMake and Git installed. The app links
+against macOS system frameworks including Cocoa, IOKit, CoreVideo, and OpenGL.
+
+## Build: Linux
+
+Install build tools and OpenGL development files. On Debian or Ubuntu:
+
+```sh
+sudo apt update
+sudo apt install build-essential cmake git libgl1-mesa-dev
+```
+
+Some Linux distributions may also need window-system development headers for
+SDL video backends, such as X11 or Wayland packages.
+
+Build and run:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+./build/devtools
+```
+
+## Build: Windows
+
+Recommended prerequisites:
+
+- Visual Studio 2022 with "Desktop development with C++"
+- CMake
+- Git
+
+From a Developer PowerShell or normal terminal:
+
+```powershell
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release
+```
+
+Run the executable:
 
 ```text
 build/Release/devtools.exe
+```
+
+With Ninja or another single-config generator, use the same style as macOS and
+Linux:
+
+```powershell
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+## Build Notes
+
+If the project directory is renamed or moved, an existing CMake cache may still
+point to the old path. Remove the ignored `build/` directory and configure
+again:
+
+```sh
+rm -rf build
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 ```
 
 ## Implemented Tools
