@@ -1,0 +1,18 @@
+#pragma once
+
+#include <array>
+#include <string>
+
+namespace tools::markup {
+
+class MarkupTool {
+public:
+    void draw();
+
+private:
+    std::array<char, 32768> input_ {};
+    std::string output_;
+    std::string status_;
+};
+
+} // namespace tools::markup
