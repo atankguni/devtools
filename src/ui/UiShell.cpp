@@ -187,6 +187,23 @@ void drawPill(std::string_view text, const ui::ThemePalette& palette)
     drawList->AddText(ImVec2(pos.x + 9.0F, pos.y + 3.0F), palette.pillText, text.data(), text.data() + text.size());
 }
 
+bool drawCommandPaletteRow(std::string_view id, std::string_view name, std::string_view description, bool selected)
+{
+    ImGui::PushID(id.data(), id.data() + id.size());
+    const bool pressed = ImGui::Selectable(name.data(), selected, ImGuiSelectableFlags_None, ImVec2(0.0F, 42.0F));
+
+    const ImVec2 itemMin = ImGui::GetItemRectMin();
+    ImGui::GetWindowDrawList()->AddText(
+        ImVec2(itemMin.x + 10.0F, itemMin.y + 24.0F),
+        ImGui::GetColorU32(ImGuiCol_TextDisabled),
+        description.data(),
+        description.data() + description.size()
+    );
+
+    ImGui::PopID();
+    return pressed;
+}
+
 } // namespace
 
 namespace ui {
@@ -247,7 +264,7 @@ void UiShell::draw(const core::ToolRegistry& registry)
     ImGuiIO& io = ImGui::GetIO();
     if ((io.KeyCtrl || io.KeySuper) && ImGui::IsKeyPressed(ImGuiKey_P)) {
         commandPaletteOpen_ = true;
-        ImGui::OpenPopup("Command Palette");
+        commandPaletteFocusSearch_ = true;
     }
 
     const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
@@ -508,6 +525,10 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
         return;
     }
 
+    if (!ImGui::IsPopupOpen("Command Palette", ImGuiPopupFlags_None)) {
+        ImGui::OpenPopup("Command Palette");
+    }
+
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     const ImVec2 paletteSize(520.0F, 340.0F);
     ImGui::SetNextWindowSize(paletteSize, ImGuiCond_Appearing);
@@ -528,7 +549,10 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
         ImGui::TextDisabled("Jump to a tool by name or description.");
         ImGui::Dummy(ImVec2(0.0F, 5.0F));
 
-        ImGui::SetKeyboardFocusHere();
+        if (commandPaletteFocusSearch_) {
+            ImGui::SetKeyboardFocusHere();
+            commandPaletteFocusSearch_ = false;
+        }
         ImGui::InputTextWithHint("##CommandSearch", "Search tools...", commandSearch_.data(), commandSearch_.size());
         ImGui::Dummy(ImVec2(0.0F, 5.0F));
 
@@ -540,7 +564,7 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
             }
 
             ++resultCount;
-            if (drawToolRow(tool, activeToolId_ == tool.id, palette, true)) {
+            if (drawCommandPaletteRow(tool.id, tool.name, tool.description, activeToolId_ == tool.id)) {
                 selectTool(tool.id);
                 commandPaletteOpen_ = false;
                 ImGui::CloseCurrentPopup();
@@ -552,12 +576,11 @@ void UiShell::drawCommandPalette(const core::ToolRegistry& registry)
             && (containsCaseInsensitive("Settings", query)
                 || containsCaseInsensitive("Theme, font, startup, privacy, and editor preferences.", query))) {
             ++resultCount;
-            if (drawNavigationRow(
+            if (drawCommandPaletteRow(
                     settingsToolId,
                     "Settings",
                     "Theme, font, startup, privacy, and editor preferences.",
-                    activeToolId_ == settingsToolId,
-                    palette
+                    activeToolId_ == settingsToolId
                 )) {
                 selectTool(settingsToolId);
                 commandPaletteOpen_ = false;

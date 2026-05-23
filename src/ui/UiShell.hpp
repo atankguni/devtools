@@ -26,6 +26,7 @@ private:
     std::string activeToolId_;
     UiSettings settings_;
     bool commandPaletteOpen_ = false;
+    bool commandPaletteFocusSearch_ = false;
     std::array<char, 128> commandSearch_ {};
 };
 
