@@ -87,6 +87,7 @@ build/Release/devtools.exe
 - Hash Generator: generates MD5, SHA-1, SHA-256, SHA-384, and SHA-512 digests.
 - JWT: encodes unsigned tokens and decodes JWT header and payload data.
 - Password: generates passwords and checks password strength.
+- Text Diff: compares two text blocks with unified diff-style output.
 - UUID Generator: generates UUID v4 values.
 - Timestamp Converter: converts Unix timestamps to local time.
 

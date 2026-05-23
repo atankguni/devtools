@@ -7,6 +7,7 @@
 #include "tools/json_formatter/JsonFormatterTool.hpp"
 #include "tools/jwt/JwtTool.hpp"
 #include "tools/password/PasswordTool.hpp"
+#include "tools/text_diff/TextDiffTool.hpp"
 #include "tools/timestamp/TimestampTool.hpp"
 #include "tools/uuid/UuidTool.hpp"
 #include "ui/ImGuiLayer.hpp"
@@ -33,6 +34,7 @@ private:
     tools::hash::HashTool hash_;
     tools::jwt::JwtTool jwt_;
     tools::password::PasswordTool password_;
+    tools::text_diff::TextDiffTool textDiff_;
     tools::uuid::UuidTool uuid_;
     tools::timestamp::TimestampTool timestamp_;
 };

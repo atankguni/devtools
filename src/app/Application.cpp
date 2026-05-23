@@ -92,6 +92,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "text_diff",
+        .name = "Text Diff",
+        .description = "Compare two text blocks.",
+        .draw = [this] { textDiff_.draw(); },
+    });
+
+    registry_.add({
         .id = "uuid",
         .name = "UUID Generator",
         .description = "Generate UUID v4 identifiers.",

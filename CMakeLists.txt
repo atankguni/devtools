@@ -60,6 +60,7 @@ add_executable(devtools
     src/tools/hash/HashTool.cpp
     src/tools/jwt/JwtTool.cpp
     src/tools/password/PasswordTool.cpp
+    src/tools/text_diff/TextDiffTool.cpp
     src/tools/uuid/UuidTool.cpp
     src/tools/timestamp/TimestampTool.cpp
 )
