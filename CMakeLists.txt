@@ -47,6 +47,14 @@ target_include_directories(imgui PUBLIC
 
 target_compile_features(imgui PUBLIC cxx_std_23)
 
+set(DEVTOOLS_PLATFORM_SOURCES)
+
+if(WIN32)
+    set(DEVTOOLS_WINDOWS_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/icon/devtools.ico")
+    configure_file(cmake/devtools.rc.in "${CMAKE_CURRENT_BINARY_DIR}/devtools.rc" @ONLY)
+    list(APPEND DEVTOOLS_PLATFORM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/devtools.rc")
+endif()
+
 add_executable(devtools
     src/main.cpp
     src/app/Application.cpp
@@ -81,7 +89,23 @@ add_executable(devtools
     src/tools/uuid/UuidTool.cpp
     src/tools/yaml_json/YamlJsonTool.cpp
     src/tools/timestamp/TimestampTool.cpp
+    ${DEVTOOLS_PLATFORM_SOURCES}
 )
+
+if(APPLE)
+    set_target_properties(devtools PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "DevTools"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.local.devtools"
+        MACOSX_BUNDLE_ICON_FILE "devtools.icns"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+    )
+    target_sources(devtools PRIVATE assets/icon/devtools.icns)
+    set_source_files_properties(assets/icon/devtools.icns PROPERTIES
+        MACOSX_PACKAGE_LOCATION "Resources"
+    )
+endif()
 
 target_include_directories(devtools PRIVATE src)
 target_compile_features(devtools PRIVATE cxx_std_23)

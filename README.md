@@ -85,7 +85,7 @@ cmake --build build --config Release
 ```
 
 ```sh
-./build/devtools
+open build/devtools.app
 ```
 
 Recommended prerequisites:
@@ -97,6 +97,8 @@ brew install cmake git
 
 `brew` is optional if you already have CMake and Git installed. The app links
 against macOS system frameworks including Cocoa, IOKit, CoreVideo, and OpenGL.
+The macOS build produces `devtools.app` with the app icon embedded in the
+bundle resources.
 
 ## Build: Linux
 

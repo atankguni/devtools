@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="DevTools app icon">
+  <defs>
+    <linearGradient id="bg" x1="184" y1="88" x2="848" y2="928" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#14b8a6"/>
+      <stop offset="0.5" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="256" y1="246" x2="768" y2="778" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="32" stdDeviation="32" flood-color="#020617" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <path d="M232 196h560c71.8 0 130 58.2 130 130v372c0 71.8-58.2 130-130 130H232c-71.8 0-130-58.2-130-130V326c0-71.8 58.2-130 130-130Z" fill="#ffffff" opacity="0.08"/>
+
+  <g filter="url(#shadow)">
+    <rect x="196" y="228" width="632" height="568" rx="84" fill="url(#panel)"/>
+    <rect x="196" y="228" width="632" height="568" rx="84" fill="none" stroke="#dbeafe" stroke-opacity="0.18" stroke-width="18"/>
+    <rect x="248" y="296" width="528" height="64" rx="32" fill="#1e293b"/>
+    <circle cx="300" cy="328" r="15" fill="#f97316"/>
+    <circle cx="348" cy="328" r="15" fill="#facc15"/>
+    <circle cx="396" cy="328" r="15" fill="#22c55e"/>
+  </g>
+
+  <path d="M398 430 300 512l98 82" fill="none" stroke="#67e8f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="58"/>
+  <path d="M626 430 724 512l-98 82" fill="none" stroke="#67e8f9" stroke-linecap="round" stroke-linejoin="round" stroke-width="58"/>
+  <path d="M550 412 474 612" fill="none" stroke="#f8fafc" stroke-linecap="round" stroke-width="58"/>
+  <path d="M330 684h196" fill="none" stroke="#22c55e" stroke-linecap="round" stroke-width="42"/>
+  <path d="M584 684h110" fill="none" stroke="#f97316" stroke-linecap="round" stroke-width="42"/>
+</svg>
