@@ -1,6 +1,7 @@
 #include "tools/hash/HashTool.hpp"
 
 #include "ui/Clipboard.hpp"
+#include "ui/Workbench.hpp"
 
 #include <imgui.h>
 
@@ -424,15 +425,15 @@ std::vector<unsigned char> sha512Bytes(std::string_view input, bool sha384)
 
 void drawHashRow(const char* label, const std::string& value)
 {
-    ImGui::TextUnformatted(label);
-    ImGui::SameLine(86.0F);
     ImGui::PushID(label);
-    if (ImGui::Button("Copy")) {
+    ImGui::TextUnformatted(label);
+    ImGui::SameLine(82.0F);
+    if (ui::workbench::quietButton("Copy", ImVec2(54.0F, 0.0F))) {
         ui::copyToClipboard(value.c_str());
     }
-    ImGui::PopID();
     ImGui::SameLine();
     ImGui::TextUnformatted(value.c_str());
+    ImGui::PopID();
 }
 
 } // namespace
@@ -441,20 +442,12 @@ namespace tools::hash {
 
 void HashTool::draw()
 {
-    ImGui::TextUnformatted("Input");
-    ImGui::InputTextMultiline(
-        "##HashInput",
-        input_.data(),
-        input_.size(),
-        ImVec2(-1.0F, ImGui::GetTextLineHeight() * 10.0F)
-    );
-
-    if (ImGui::Button("Generate Hashes")) {
+    if (ui::workbench::primaryButton("Generate")) {
         generate();
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Clear")) {
+    if (ui::workbench::quietButton("Clear")) {
         input_.fill('\0');
         md5_.clear();
         sha1_.clear();
@@ -464,26 +457,60 @@ void HashTool::draw()
         status_.clear();
     }
 
-    if (!status_.empty()) {
-        ImGui::SameLine();
-        ImGui::TextDisabled("%s", status_.c_str());
+    ImGui::SameLine();
+    if (ui::workbench::quietButton("Copy All") && !sha256_.empty()) {
+        const std::string all = "MD5: " + md5_ + "\nSHA-1: " + sha1_ + "\nSHA-256: " + sha256_
+            + "\nSHA-384: " + sha384_ + "\nSHA-512: " + sha512_;
+        ui::copyToClipboard(all.c_str());
+        status_ = "Copied all hashes";
     }
 
-    if (!sha256_.empty()) {
-        ImGui::Separator();
-        if (ImGui::Button("Copy All")) {
-            const std::string all = "MD5: " + md5_ + "\nSHA-1: " + sha1_ + "\nSHA-256: " + sha256_
-                + "\nSHA-384: " + sha384_ + "\nSHA-512: " + sha512_;
-            ui::copyToClipboard(all.c_str());
-            status_ = "Copied all hashes";
-        }
-        ImGui::TextDisabled("MD5 and SHA-1 are legacy hashes. Prefer SHA-256 or SHA-512 for new work.");
-        drawHashRow("MD5", md5_);
-        drawHashRow("SHA-1", sha1_);
-        drawHashRow("SHA-256", sha256_);
-        drawHashRow("SHA-384", sha384_);
-        drawHashRow("SHA-512", sha512_);
+    if (!status_.empty()) {
+        ImGui::SameLine();
+        ui::workbench::drawStatus(status_, ui::workbench::StatusTone::Success);
     }
+
+    ImGui::Dummy(ImVec2(0.0F, 6.0F));
+
+    const ImVec2 available = ImGui::GetContentRegionAvail();
+    const float gap = 10.0F;
+    const bool split = available.x >= 860.0F;
+    const ImVec2 inputSize(
+        split ? (available.x - gap) * 0.46F : available.x,
+        split ? available.y : (available.y - gap) * 0.46F
+    );
+
+    if (ui::workbench::beginPanel("HashInputPane", "Input", "Text to hash", inputSize)) {
+        ImGui::InputTextMultiline(
+            "##HashInput",
+            input_.data(),
+            input_.size(),
+            ImVec2(-1.0F, -1.0F),
+            ImGuiInputTextFlags_AllowTabInput
+        );
+    }
+    ui::workbench::endPanel();
+
+    if (split) {
+        ImGui::SameLine(0.0F, gap);
+    } else {
+        ImGui::Dummy(ImVec2(0.0F, gap));
+    }
+
+    if (ui::workbench::beginPanel("HashOutputPane", "Hashes", sha256_.empty() ? "Generate to view results" : "5 digests", ImVec2(0.0F, 0.0F))) {
+        ImGui::TextDisabled("MD5 and SHA-1 are legacy hashes. Prefer SHA-256 or SHA-512 for new work.");
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+        if (sha256_.empty()) {
+            ImGui::TextDisabled("No hashes generated yet.");
+        } else {
+            drawHashRow("MD5", md5_);
+            drawHashRow("SHA-1", sha1_);
+            drawHashRow("SHA-256", sha256_);
+            drawHashRow("SHA-384", sha384_);
+            drawHashRow("SHA-512", sha512_);
+        }
+    }
+    ui::workbench::endPanel();
 }
 
 void HashTool::generate()

@@ -1,6 +1,7 @@
 #include "tools/uuid/UuidTool.hpp"
 
 #include "ui/Clipboard.hpp"
+#include "ui/Workbench.hpp"
 
 #include <imgui.h>
 
@@ -48,31 +49,47 @@ void UuidTool::draw()
         generate();
     }
 
-    if (ImGui::Button("Generate UUID v4")) {
+    if (ui::workbench::primaryButton("Generate")) {
         generate();
     }
 
     ImGui::SameLine();
-    if (!generated_.empty() && ImGui::Button("Copy Latest")) {
+    if (!generated_.empty() && ui::workbench::quietButton("Copy Latest")) {
         ui::copyToClipboard(generated_.front().c_str());
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Clear History")) {
+    if (ui::workbench::quietButton("Clear")) {
         generated_.clear();
     }
 
-    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0F, 6.0F));
 
-    for (const std::string& value : generated_) {
-        ImGui::PushID(value.c_str());
-        if (ImGui::Button("Copy")) {
-            ui::copyToClipboard(value.c_str());
+    if (ui::workbench::beginPanel("UuidLatestPane", "Latest UUID", generated_.empty() ? "No value generated" : "Version 4")) {
+        if (generated_.empty()) {
+            ImGui::TextDisabled("Generate a UUID to begin.");
+        } else {
+            ImGui::SetWindowFontScale(1.18F);
+            ImGui::TextUnformatted(generated_.front().c_str());
+            ImGui::SetWindowFontScale(1.0F);
         }
-        ImGui::SameLine();
-        ImGui::TextUnformatted(value.c_str());
-        ImGui::PopID();
     }
+    ui::workbench::endPanel();
+
+    ImGui::Dummy(ImVec2(0.0F, 8.0F));
+
+    if (ui::workbench::beginPanel("UuidHistoryPane", "History", "Most recent 20", ImVec2(0.0F, 0.0F))) {
+        for (const std::string& value : generated_) {
+            ImGui::PushID(value.c_str());
+            if (ui::workbench::quietButton("Copy", ImVec2(54.0F, 0.0F))) {
+                ui::copyToClipboard(value.c_str());
+            }
+            ImGui::SameLine();
+            ImGui::TextUnformatted(value.c_str());
+            ImGui::PopID();
+        }
+    }
+    ui::workbench::endPanel();
 }
 
 void UuidTool::generate()

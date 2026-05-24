@@ -1,10 +1,12 @@
 #include "tools/base64/Base64Tool.hpp"
 
 #include "ui/Clipboard.hpp"
+#include "ui/Workbench.hpp"
 
 #include <imgui.h>
 
 #include <array>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -71,59 +73,94 @@ namespace tools::base64 {
 
 void Base64Tool::draw()
 {
-    ImGui::TextUnformatted("Input");
-    ImGui::InputTextMultiline(
-        "##Base64Input",
-        input_.data(),
-        input_.size(),
-        ImVec2(-1.0F, ImGui::GetTextLineHeight() * 10.0F)
-    );
-
-    if (ImGui::Button("Encode")) {
+    auto encode = [&] {
         output_ = encodeBase64(input_.data());
         status_ = "Encoded";
-    }
+        statusIsError_ = false;
+    };
 
-    ImGui::SameLine();
-    if (ImGui::Button("Decode")) {
+    auto decode = [&] {
         if (decodeBase64(input_.data(), output_)) {
             status_ = "Decoded";
+            statusIsError_ = false;
         } else {
             status_ = "Invalid Base64 input";
+            statusIsError_ = true;
         }
+    };
+
+    if (ui::workbench::primaryButton("Encode")) {
+        encode();
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Clear")) {
+    if (ui::workbench::quietButton("Decode")) {
+        decode();
+    }
+
+    ImGui::SameLine();
+    if (ui::workbench::quietButton("Clear")) {
         input_.fill('\0');
         output_.clear();
         status_.clear();
+        statusIsError_ = false;
+    }
+
+    ImGui::SameLine();
+    if (ui::workbench::quietButton("Copy") && !output_.empty()) {
+        ui::copyToClipboard(output_.c_str());
+        status_ = "Copied output";
+        statusIsError_ = false;
     }
 
     if (!status_.empty()) {
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", status_.c_str());
+        ui::workbench::drawStatus(
+            status_,
+            statusIsError_ ? ui::workbench::StatusTone::Error : ui::workbench::StatusTone::Success
+        );
     }
 
-    ImGui::Separator();
-    ImGui::TextUnformatted("Output");
-    if (!output_.empty()) {
-        ImGui::SameLine();
-        if (ImGui::Button("Copy Output")) {
-            ui::copyToClipboard(output_.c_str());
-            status_ = "Copied output";
-        }
+    ImGui::Dummy(ImVec2(0.0F, 6.0F));
+
+    const ImVec2 available = ImGui::GetContentRegionAvail();
+    const float gap = 10.0F;
+    const bool split = available.x >= 820.0F;
+    const ImVec2 paneSize(
+        split ? (available.x - gap) * 0.5F : available.x,
+        split ? available.y : (available.y - gap) * 0.5F
+    );
+
+    if (ui::workbench::beginPanel("Base64InputPane", "Input", "Text or Base64 data", paneSize)) {
+        ImGui::InputTextMultiline(
+            "##Base64Input",
+            input_.data(),
+            input_.size(),
+            ImVec2(-1.0F, -1.0F),
+            ImGuiInputTextFlags_AllowTabInput
+        );
+    }
+    ui::workbench::endPanel();
+
+    if (split) {
+        ImGui::SameLine(0.0F, gap);
+    } else {
+        ImGui::Dummy(ImVec2(0.0F, gap));
     }
 
     std::vector<char> outputBuffer(output_.begin(), output_.end());
     outputBuffer.push_back('\0');
-    ImGui::InputTextMultiline(
-        "##Base64Output",
-        outputBuffer.data(),
-        outputBuffer.size(),
-        ImVec2(-1.0F, ImGui::GetTextLineHeight() * 12.0F),
-        ImGuiInputTextFlags_ReadOnly
-    );
+    const std::string outputDetail = output_.empty() ? "Result appears here" : std::to_string(output_.size()) + " bytes";
+    if (ui::workbench::beginPanel("Base64OutputPane", "Output", outputDetail, ImVec2(0.0F, 0.0F))) {
+        ImGui::InputTextMultiline(
+            "##Base64Output",
+            outputBuffer.data(),
+            outputBuffer.size(),
+            ImVec2(-1.0F, -1.0F),
+            ImGuiInputTextFlags_ReadOnly
+        );
+    }
+    ui::workbench::endPanel();
 }
 
 } // namespace tools::base64

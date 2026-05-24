@@ -1,12 +1,14 @@
 #include "tools/url/UrlTool.hpp"
 
 #include "ui/Clipboard.hpp"
+#include "ui/Workbench.hpp"
 
 #include <imgui.h>
 
 #include <cctype>
 #include <iomanip>
 #include <sstream>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -72,41 +74,77 @@ namespace tools::url {
 
 void UrlTool::draw()
 {
-    ImGui::TextUnformatted("Input");
-    ImGui::InputTextMultiline("##UrlInput", input_.data(), input_.size(), ImVec2(-1.0F, ImGui::GetTextLineHeight() * 10.0F));
-
-    if (ImGui::Button("Encode")) {
+    if (ui::workbench::primaryButton("Encode")) {
         output_ = encodeUrl(input_.data());
         status_ = "Encoded";
+        statusIsError_ = false;
     }
     ImGui::SameLine();
-    if (ImGui::Button("Decode")) {
-        status_ = decodeUrl(input_.data(), output_) ? "Decoded" : "Invalid percent encoding";
+    if (ui::workbench::quietButton("Decode")) {
+        statusIsError_ = !decodeUrl(input_.data(), output_);
+        status_ = statusIsError_ ? "Invalid percent encoding" : "Decoded";
     }
     ImGui::SameLine();
-    if (ImGui::Button("Clear")) {
+    if (ui::workbench::quietButton("Clear")) {
         input_.fill('\0');
         output_.clear();
         status_.clear();
+        statusIsError_ = false;
+    }
+    ImGui::SameLine();
+    if (ui::workbench::quietButton("Copy") && !output_.empty()) {
+        ui::copyToClipboard(output_.c_str());
+        status_ = "Copied output";
+        statusIsError_ = false;
     }
     if (!status_.empty()) {
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", status_.c_str());
+        ui::workbench::drawStatus(
+            status_,
+            statusIsError_ ? ui::workbench::StatusTone::Error : ui::workbench::StatusTone::Success
+        );
     }
 
-    ImGui::Separator();
-    ImGui::TextUnformatted("Output");
-    if (!output_.empty()) {
-        ImGui::SameLine();
-        if (ImGui::Button("Copy Output")) {
-            ui::copyToClipboard(output_.c_str());
-            status_ = "Copied output";
-        }
+    ImGui::Dummy(ImVec2(0.0F, 6.0F));
+
+    const ImVec2 available = ImGui::GetContentRegionAvail();
+    const float gap = 10.0F;
+    const bool split = available.x >= 820.0F;
+    const ImVec2 paneSize(
+        split ? (available.x - gap) * 0.5F : available.x,
+        split ? available.y : (available.y - gap) * 0.5F
+    );
+
+    if (ui::workbench::beginPanel("UrlInputPane", "Input", "URL text or percent-encoded value", paneSize)) {
+        ImGui::InputTextMultiline(
+            "##UrlInput",
+            input_.data(),
+            input_.size(),
+            ImVec2(-1.0F, -1.0F),
+            ImGuiInputTextFlags_AllowTabInput
+        );
+    }
+    ui::workbench::endPanel();
+
+    if (split) {
+        ImGui::SameLine(0.0F, gap);
+    } else {
+        ImGui::Dummy(ImVec2(0.0F, gap));
     }
 
     std::vector<char> buffer(output_.begin(), output_.end());
     buffer.push_back('\0');
-    ImGui::InputTextMultiline("##UrlOutput", buffer.data(), buffer.size(), ImVec2(-1.0F, ImGui::GetTextLineHeight() * 12.0F), ImGuiInputTextFlags_ReadOnly);
+    const std::string outputDetail = output_.empty() ? "Result appears here" : std::to_string(output_.size()) + " bytes";
+    if (ui::workbench::beginPanel("UrlOutputPane", "Output", outputDetail, ImVec2(0.0F, 0.0F))) {
+        ImGui::InputTextMultiline(
+            "##UrlOutput",
+            buffer.data(),
+            buffer.size(),
+            ImVec2(-1.0F, -1.0F),
+            ImGuiInputTextFlags_ReadOnly
+        );
+    }
+    ui::workbench::endPanel();
 }
 
 } // namespace tools::url
