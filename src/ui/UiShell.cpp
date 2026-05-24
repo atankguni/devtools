@@ -15,6 +15,10 @@ constexpr float outerPadding = 12.0F;
 constexpr float panelGap = 8.0F;
 constexpr float sidebarWidth = 232.0F;
 constexpr std::string_view settingsToolId = "__settings";
+constexpr std::string_view appName = "DevTools";
+constexpr std::string_view appVersion = "0.1.0";
+constexpr std::string_view ownerName = "Atank Guni";
+constexpr std::string_view ownerEmail = "atankguni@gmail.com";
 
 struct ToolCategory {
     std::string_view name;
@@ -591,6 +595,26 @@ void UiShell::drawSettings(const core::ToolRegistry& registry)
 
         ImGui::Checkbox("Never store tool inputs", &settings_.neverStoreToolInputs);
         ImGui::Checkbox("Clear inputs on exit", &settings_.clearInputsOnExit);
+
+        ImGui::Dummy(ImVec2(0.0F, 10.0F));
+        ImGui::TextUnformatted("About");
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0.0F, 4.0F));
+
+        ImGui::Text("%.*s %.*s", static_cast<int>(appName.size()), appName.data(), static_cast<int>(appVersion.size()), appVersion.data());
+        ImGui::Text("Created by %.*s", static_cast<int>(ownerName.size()), ownerName.data());
+        ImGui::Text("Email: %.*s", static_cast<int>(ownerEmail.size()), ownerEmail.data());
+        ImGui::SameLine();
+        if (ImGui::Button("Copy Email")) {
+            ui::copyToClipboard(ownerEmail.data());
+        }
+        ImGui::TextDisabled("Copyright (c) 2026 %.*s.", static_cast<int>(ownerName.size()), ownerName.data());
+        ImGui::TextDisabled("%.*s and its associated project identity are trademarks of %.*s.",
+            static_cast<int>(appName.size()),
+            appName.data(),
+            static_cast<int>(ownerName.size()),
+            ownerName.data()
+        );
 
         ImGui::Dummy(ImVec2(0.0F, 8.0F));
         ImGui::TextDisabled(

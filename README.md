@@ -241,3 +241,9 @@ designed specifically for developer tasks.
   project.
 - The current OpenGL backend targets OpenGL 3.2 core with GLSL `#version 150`,
   which works well across modern Windows, macOS, and Linux desktops.
+
+## Legal
+
+Copyright (c) 2026 Atank Guni <atankguni@gmail.com>.
+
+DevTools and its associated project identity are trademarks of Atank Guni.
