@@ -28,6 +28,7 @@ private:
     bool commandPaletteOpen_ = false;
     bool commandPaletteFocusSearch_ = false;
     std::array<char, 128> commandSearch_ {};
+    std::array<char, 96> sidebarSearch_ {};
 };
 
 } // namespace ui

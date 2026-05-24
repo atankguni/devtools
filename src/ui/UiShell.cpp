@@ -16,6 +16,19 @@ constexpr float panelGap = 10.0F;
 constexpr float sidebarWidth = 244.0F;
 constexpr std::string_view settingsToolId = "__settings";
 
+struct ToolCategory {
+    std::string_view name;
+    std::string_view ids;
+};
+
+constexpr std::array toolCategories {
+    ToolCategory { "Format", "json_formatter sql_formatter markup text_diff" },
+    ToolCategory { "Convert", "csv_json yaml_json timestamp number_base color permissions url_parser" },
+    ToolCategory { "Encode", "base64 url jwt hash" },
+    ToolCategory { "Inspect", "regex string_inspector cron line_tools" },
+    ToolCategory { "Generate", "uuid password test_data" },
+};
+
 bool containsCaseInsensitive(std::string_view text, std::string_view query)
 {
     if (query.empty()) {
@@ -42,6 +55,40 @@ bool containsCaseInsensitive(std::string_view text, std::string_view query)
     }
 
     return false;
+}
+
+bool categoryContains(const ToolCategory& category, std::string_view toolId)
+{
+    std::size_t start = 0;
+    while (start < category.ids.size()) {
+        const std::size_t end = category.ids.find(' ', start);
+        const std::string_view id = category.ids.substr(start, end == std::string_view::npos ? end : end - start);
+        if (id == toolId) {
+            return true;
+        }
+        if (end == std::string_view::npos) {
+            break;
+        }
+        start = end + 1;
+    }
+    return false;
+}
+
+std::string_view toolCategoryName(std::string_view toolId)
+{
+    for (const ToolCategory& category : toolCategories) {
+        if (categoryContains(category, toolId)) {
+            return category.name;
+        }
+    }
+    return "Other";
+}
+
+bool toolMatchesQuery(const core::Tool& tool, std::string_view query)
+{
+    return containsCaseInsensitive(tool.name, query)
+        || containsCaseInsensitive(tool.description, query)
+        || containsCaseInsensitive(toolCategoryName(tool.id), query);
 }
 
 void drawViewportBackground(ImGuiViewport* viewport, const ui::ThemePalette& palette)
@@ -87,18 +134,25 @@ void drawBrand(const ui::ThemePalette& palette)
     ImGui::Dummy(ImVec2(42.0F, 34.0F));
     ImGui::SameLine();
     ImGui::BeginGroup();
-    ImGui::SetWindowFontScale(1.04F);
+    ImGui::SetWindowFontScale(1.02F);
     ImGui::TextUnformatted("DevTools");
     ImGui::SetWindowFontScale(1.0F);
     ImGui::TextDisabled("Native utility suite");
     ImGui::EndGroup();
 }
 
+void drawSectionHeader(std::string_view text)
+{
+    ImGui::Dummy(ImVec2(0.0F, 4.0F));
+    ImGui::TextDisabled("%.*s", static_cast<int>(text.size()), text.data());
+    ImGui::Dummy(ImVec2(0.0F, 1.0F));
+}
+
 bool drawNavigationRow(std::string_view id, std::string_view name, std::string_view description, bool selected, const ui::ThemePalette& palette)
 {
     ImGui::PushID(id.data(), id.data() + id.size());
     const ImVec2 pos = ImGui::GetCursorScreenPos();
-    const ImVec2 size(ImGui::GetContentRegionAvail().x, 48.0F);
+    const ImVec2 size(ImGui::GetContentRegionAvail().x, 46.0F);
     const bool pressed = ImGui::InvisibleButton("nav-row", size);
     const bool hovered = ImGui::IsItemHovered();
 
@@ -106,12 +160,9 @@ bool drawNavigationRow(std::string_view id, std::string_view name, std::string_v
     const ImU32 fill = selected ? palette.rowSelected : hovered ? palette.rowHovered
                                                                 : palette.row;
     drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), fill, 9.0F);
-    drawList->AddRect(
-        pos,
-        ImVec2(pos.x + size.x, pos.y + size.y),
-        selected ? palette.rowSelectedBorder : palette.border,
-        9.0F
-    );
+    if (selected) {
+        drawList->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), palette.rowSelectedBorder, 9.0F);
+    }
 
     if (selected) {
         drawList->AddRectFilled(pos, ImVec2(pos.x + 3.0F, pos.y + size.y), palette.accent, 9.0F);
@@ -125,7 +176,7 @@ bool drawNavigationRow(std::string_view id, std::string_view name, std::string_v
         name.data() + name.size()
     );
     drawList->AddText(
-        ImVec2(textPos.x, textPos.y + 20.0F),
+        ImVec2(textPos.x, textPos.y + 19.0F),
         palette.rowDescription,
         description.data(),
         description.data() + description.size()
@@ -146,12 +197,9 @@ bool drawCompactNavigationRow(std::string_view id, std::string_view name, bool s
     const ImU32 fill = selected ? palette.rowSelected : hovered ? palette.rowHovered
                                                                 : palette.row;
     drawList->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), fill, 9.0F);
-    drawList->AddRect(
-        pos,
-        ImVec2(pos.x + size.x, pos.y + size.y),
-        selected ? palette.rowSelectedBorder : palette.border,
-        9.0F
-    );
+    if (selected) {
+        drawList->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), palette.rowSelectedBorder, 9.0F);
+    }
 
     if (selected) {
         drawList->AddRectFilled(pos, ImVec2(pos.x + 3.0F, pos.y + size.y), palette.accent, 9.0F);
@@ -318,24 +366,61 @@ void UiShell::drawSidebar(const core::ToolRegistry& registry)
 {
     const ThemePalette& palette = themePalette(resolveThemeMode(settings_.themeMode));
     drawBrand(palette);
-    ImGui::Dummy(ImVec2(0.0F, 10.0F));
+    ImGui::Dummy(ImVec2(0.0F, 12.0F));
 
-    ImGui::TextDisabled("TOOLS");
-    ImGui::Separator();
-    ImGui::Spacing();
+    ImGui::SetNextItemWidth(-1.0F);
+    ImGui::InputTextWithHint("##SidebarSearch", "Search tools", sidebarSearch_.data(), sidebarSearch_.size());
+    ImGui::Dummy(ImVec2(0.0F, 6.0F));
 
+    const std::string_view query(sidebarSearch_.data());
     const bool showDescriptions = settings_.showSidebarDescriptions;
-    for (const core::Tool& tool : registry.tools()) {
-        if (drawToolRow(tool, activeToolId_ == tool.id, palette, showDescriptions)) {
-            selectTool(tool.id);
+    const float footerHeight = showDescriptions ? 96.0F : 88.0F;
+    if (ImGui::BeginChild("Tool Navigation", ImVec2(0.0F, -footerHeight), false)) {
+        int visibleCount = 0;
+        for (const ToolCategory& category : toolCategories) {
+            bool drewHeader = false;
+            for (const core::Tool& tool : registry.tools()) {
+                if (!categoryContains(category, tool.id) || !toolMatchesQuery(tool, query)) {
+                    continue;
+                }
+                if (!drewHeader) {
+                    drawSectionHeader(category.name);
+                    drewHeader = true;
+                }
+                if (drawToolRow(tool, activeToolId_ == tool.id, palette, showDescriptions)) {
+                    selectTool(tool.id);
+                }
+                ++visibleCount;
+                ImGui::Dummy(ImVec2(0.0F, 3.0F));
+            }
         }
-        ImGui::Dummy(ImVec2(0.0F, 4.0F));
-    }
 
-    const float footerY = ImGui::GetWindowHeight() - (showDescriptions ? 112.0F : 100.0F);
-    if (footerY > ImGui::GetCursorPosY()) {
-        ImGui::SetCursorPosY(footerY);
+        bool drewOtherHeader = false;
+        for (const core::Tool& tool : registry.tools()) {
+            bool knownCategory = false;
+            for (const ToolCategory& category : toolCategories) {
+                knownCategory = knownCategory || categoryContains(category, tool.id);
+            }
+            if (knownCategory || !toolMatchesQuery(tool, query)) {
+                continue;
+            }
+            if (!drewOtherHeader) {
+                drawSectionHeader("Other");
+                drewOtherHeader = true;
+            }
+            if (drawToolRow(tool, activeToolId_ == tool.id, palette, showDescriptions)) {
+                selectTool(tool.id);
+            }
+            ++visibleCount;
+            ImGui::Dummy(ImVec2(0.0F, 3.0F));
+        }
+
+        if (visibleCount == 0) {
+            ImGui::TextDisabled("No matching tools.");
+        }
     }
+    ImGui::EndChild();
+
     ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0F, 4.0F));
     const bool settingsPressed = showDescriptions
@@ -366,21 +451,29 @@ void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
         return;
     }
 
-    drawPill("Active tool", palette);
+    drawPill(toolCategoryName(activeTool->id), palette);
     ImGui::SameLine();
     ImGui::TextDisabled("%s", activeTool->description.c_str());
-    ImGui::Dummy(ImVec2(0.0F, 3.0F));
+    if (ImGui::GetWindowWidth() > 380.0F) {
+        ImGui::SameLine(ImGui::GetWindowWidth() - 122.0F);
+    } else {
+        ImGui::SameLine();
+    }
+    if (ImGui::Button("Settings")) {
+        selectTool(settingsToolId);
+    }
+    ImGui::Dummy(ImVec2(0.0F, 2.0F));
 
-    ImGui::SetWindowFontScale(1.14F);
+    ImGui::SetWindowFontScale(1.12F);
     ImGui::TextUnformatted(activeTool->name.c_str());
     ImGui::SetWindowFontScale(1.0F);
-    ImGui::TextDisabled("%s", activeTool->description.c_str());
+    ImGui::Separator();
     ImGui::Dummy(ImVec2(0.0F, 6.0F));
 
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(palette.surface));
-    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0F);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(13.0F, 13.0F));
-    if (ImGui::BeginChild("Tool Surface", ImVec2(0.0F, 0.0F), true)) {
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0F);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14.0F, 14.0F));
+    if (ImGui::BeginChild("Tool Surface", ImVec2(0.0F, 0.0F), false)) {
         activeTool->draw();
     }
     ImGui::EndChild();

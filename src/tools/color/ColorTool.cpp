@@ -70,8 +70,36 @@ void ColorTool::draw()
         output_ = makeOutput(red_, green_, blue_);
     }
 
-    ImGui::TextUnformatted("HEX");
-    if (ImGui::InputText("##HexInput", hexInput_.data(), hexInput_.size())) {
+    const ImVec4 color(static_cast<float>(red_) / 255.0F, static_cast<float>(green_) / 255.0F, static_cast<float>(blue_) / 255.0F, 1.0F);
+    const ImVec2 available = ImGui::GetContentRegionAvail();
+    const bool split = available.x >= 700.0F;
+    const float previewWidth = split ? 230.0F : available.x;
+
+    ImGui::BeginChild("ColorPreview", ImVec2(previewWidth, split ? 214.0F : 160.0F), true);
+    const ImVec2 previewMin = ImGui::GetCursorScreenPos();
+    const ImVec2 previewSize(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y - 34.0F);
+    ImGui::GetWindowDrawList()->AddRectFilled(
+        previewMin,
+        ImVec2(previewMin.x + previewSize.x, previewMin.y + previewSize.y),
+        ImGui::ColorConvertFloat4ToU32(color),
+        8.0F
+    );
+    ImGui::Dummy(previewSize);
+    ImGui::TextUnformatted(hexInput_.data());
+    if (!status_.empty()) {
+        ImGui::SameLine();
+        ImGui::TextDisabled("%s", status_.c_str());
+    }
+    ImGui::EndChild();
+
+    if (split) {
+        ImGui::SameLine();
+    }
+
+    ImGui::BeginChild("ColorControls", ImVec2(0.0F, 214.0F), true);
+    ImGui::TextUnformatted("Color Input");
+    ImGui::SetNextItemWidth(180.0F);
+    if (ImGui::InputText("HEX", hexInput_.data(), hexInput_.size())) {
         updateFromHex();
     }
 
@@ -83,19 +111,23 @@ void ColorTool::draw()
         updateFromRgb();
     }
 
-    const ImVec4 color(static_cast<float>(red_) / 255.0F, static_cast<float>(green_) / 255.0F, static_cast<float>(blue_) / 255.0F, 1.0F);
-    ImGui::ColorButton("Preview", color, ImGuiColorEditFlags_NoTooltip, ImVec2(80.0F, 36.0F));
-    if (!status_.empty()) {
-        ImGui::SameLine();
-        ImGui::TextDisabled("%s", status_.c_str());
-    }
-
-    ImGui::Separator();
     if (ImGui::Button("Copy Values")) {
         ui::copyToClipboard(output_.c_str());
         status_ = "Copied values";
     }
-    ImGui::TextUnformatted(output_.c_str());
+    ImGui::EndChild();
+
+    ImGui::Separator();
+    ImGui::TextUnformatted("Converted Values");
+    std::array<char, 256> outputBuffer {};
+    output_.copy(outputBuffer.data(), outputBuffer.size() - 1U);
+    ImGui::InputTextMultiline(
+        "##ColorValues",
+        outputBuffer.data(),
+        outputBuffer.size(),
+        ImVec2(-1.0F, ImGui::GetTextLineHeight() * 6.0F),
+        ImGuiInputTextFlags_ReadOnly
+    );
 }
 
 void ColorTool::updateFromHex()

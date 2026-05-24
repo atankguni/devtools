@@ -28,7 +28,7 @@ private:
     [[nodiscard]] StrengthResult checkStrength(std::string_view password) const;
 
     Mode mode_ = Mode::Generator;
-    int length_ = 20;
+    int length_ = 13;
     bool includeSymbols_ = true;
     bool includeNumbers_ = true;
     bool includeLowercase_ = true;

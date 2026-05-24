@@ -364,29 +364,14 @@ namespace tools::json_formatter {
 
 void JsonFormatterTool::draw()
 {
-    ImGui::TextUnformatted("Input");
-    ImGui::InputTextMultiline(
-        "##JsonInput",
-        input_.data(),
-        input_.size(),
-        ImVec2(-1.0F, ImGui::GetTextLineHeight() * 14.0F)
-    );
-
-    ImGui::TextUnformatted("Output format");
     int selectedMode = static_cast<int>(outputMode_);
-    if (ImGui::RadioButton("2 spaces", selectedMode == static_cast<int>(OutputMode::TwoSpaces))) {
-        outputMode_ = OutputMode::TwoSpaces;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("4 spaces", selectedMode == static_cast<int>(OutputMode::FourSpaces))) {
-        outputMode_ = OutputMode::FourSpaces;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Minified", selectedMode == static_cast<int>(OutputMode::Minified))) {
-        outputMode_ = OutputMode::Minified;
+    constexpr const char* outputModes[] = { "2 spaces", "4 spaces", "Minified" };
+    ImGui::SetNextItemWidth(150.0F);
+    if (ImGui::Combo("##JsonOutputMode", &selectedMode, outputModes, IM_ARRAYSIZE(outputModes))) {
+        outputMode_ = static_cast<OutputMode>(selectedMode);
     }
 
-    if (ImGui::Button("Format")) {
+    auto runFormatter = [&] {
         JsonOutputMode jsonOutputMode = JsonOutputMode::TwoSpaces;
         switch (outputMode_) {
         case OutputMode::TwoSpaces:
@@ -404,6 +389,11 @@ void JsonFormatterTool::draw()
         if (formatter.format(output_, status_)) {
             status_ = "Valid JSON";
         }
+    };
+
+    ImGui::SameLine();
+    if (ImGui::Button("Format")) {
+        runFormatter();
     }
 
     ImGui::SameLine();
@@ -413,30 +403,55 @@ void JsonFormatterTool::draw()
         status_.clear();
     }
 
+    ImGui::SameLine();
+    if (ImGui::Button("Copy Output") && !output_.empty()) {
+        ui::copyToClipboard(output_.c_str());
+        status_ = "Copied output";
+    }
+
     if (!status_.empty()) {
         ImGui::SameLine();
         ImGui::TextDisabled("%s", status_.c_str());
     }
 
     ImGui::Separator();
-    ImGui::TextUnformatted("Output");
-    if (!output_.empty()) {
-        ImGui::SameLine();
-        if (ImGui::Button("Copy Output")) {
-            ui::copyToClipboard(output_.c_str());
-            status_ = "Copied output";
-        }
+
+    const ImVec2 available = ImGui::GetContentRegionAvail();
+    const float gap = 10.0F;
+    const bool split = available.x >= 760.0F;
+    const ImVec2 paneSize(
+        split ? (available.x - gap) * 0.5F : available.x,
+        split ? available.y : (available.y - gap) * 0.5F
+    );
+
+    ImGui::BeginChild("JsonInputPane", paneSize, false);
+    ImGui::TextUnformatted("Input");
+    ImGui::InputTextMultiline(
+        "##JsonInput",
+        input_.data(),
+        input_.size(),
+        ImVec2(-1.0F, -1.0F)
+    );
+    ImGui::EndChild();
+
+    if (split) {
+        ImGui::SameLine(0.0F, gap);
+    } else {
+        ImGui::Dummy(ImVec2(0.0F, gap));
     }
 
     std::vector<char> outputBuffer(output_.begin(), output_.end());
     outputBuffer.push_back('\0');
+    ImGui::BeginChild("JsonOutputPane", ImVec2(0.0F, 0.0F), false);
+    ImGui::TextUnformatted("Output");
     ImGui::InputTextMultiline(
         "##JsonOutput",
         outputBuffer.data(),
         outputBuffer.size(),
-        ImVec2(-1.0F, ImGui::GetTextLineHeight() * 16.0F),
+        ImVec2(-1.0F, -1.0F),
         ImGuiInputTextFlags_ReadOnly
     );
+    ImGui::EndChild();
 }
 
 } // namespace tools::json_formatter

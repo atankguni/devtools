@@ -6,7 +6,11 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <iomanip>
+#include <limits>
 #include <random>
+#include <sstream>
 #include <string_view>
 
 namespace {
@@ -32,6 +36,90 @@ std::string pickCharacters(std::mt19937_64& engine, std::string_view candidates,
         value += candidates[distribution(engine)];
     }
     return value;
+}
+
+std::size_t estimateCharacterPoolSize(std::string_view password)
+{
+    std::size_t poolSize = 0;
+    if (containsAny(password, lowercase)) {
+        poolSize += lowercase.size();
+    }
+    if (containsAny(password, uppercase)) {
+        poolSize += uppercase.size();
+    }
+    if (containsAny(password, numbers)) {
+        poolSize += numbers.size();
+    }
+    if (containsAny(password, symbols)) {
+        poolSize += symbols.size();
+    }
+    return poolSize;
+}
+
+std::string formatDuration(double seconds)
+{
+    if (!std::isfinite(seconds) || seconds > 365.25 * 24.0 * 60.0 * 60.0 * 1.0e12) {
+        return "more than 1 trillion years";
+    }
+    if (seconds < 1.0e-3) {
+        return "less than 1 millisecond";
+    }
+
+    struct Unit {
+        const char* singular;
+        const char* plural;
+        double seconds;
+    };
+
+    constexpr Unit units[] {
+        { "year", "years", 365.25 * 24.0 * 60.0 * 60.0 },
+        { "day", "days", 24.0 * 60.0 * 60.0 },
+        { "hour", "hours", 60.0 * 60.0 },
+        { "minute", "minutes", 60.0 },
+        { "second", "seconds", 1.0 },
+    };
+
+    for (const Unit& unit : units) {
+        if (seconds >= unit.seconds) {
+            const double value = seconds / unit.seconds;
+            std::ostringstream stream;
+            if (value >= 100.0) {
+                stream << std::fixed << std::setprecision(0);
+            } else if (value >= 10.0) {
+                stream << std::fixed << std::setprecision(1);
+            } else {
+                stream << std::fixed << std::setprecision(2);
+            }
+            stream << value << ' ' << (value == 1.0 ? unit.singular : unit.plural);
+            return stream.str();
+        }
+    }
+
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(1) << (seconds * 1000.0) << " milliseconds";
+    return stream.str();
+}
+
+std::string estimateBreakTime(std::string_view password)
+{
+    if (password.empty()) {
+        return "Generate a password to estimate break time.";
+    }
+
+    constexpr double offlineGuessesPerSecond = 1.0e11;
+    const std::size_t poolSize = estimateCharacterPoolSize(password);
+    if (poolSize == 0U) {
+        return "Unable to estimate character space.";
+    }
+
+    const double entropyBits = static_cast<double>(password.size()) * std::log2(static_cast<double>(poolSize));
+    const double averageSeconds = std::pow(2.0, entropyBits - 1.0) / offlineGuessesPerSecond;
+
+    std::ostringstream stream;
+    stream << "Estimated brute-force time: " << formatDuration(averageSeconds)
+           << " at 100 billion guesses/sec (" << std::fixed << std::setprecision(1)
+           << entropyBits << " bits).";
+    return stream.str();
 }
 
 void drawCopyableOutput(const char* label, const std::string& value)
@@ -107,6 +195,7 @@ void PasswordTool::drawGenerator()
         const StrengthResult result = checkStrength(generatedPassword_);
         ImGui::Text("Strength: %s (%d/100)", result.label.c_str(), result.score);
         ImGui::ProgressBar(static_cast<float>(result.score) / 100.0F, ImVec2(-1.0F, 0.0F));
+        ImGui::TextWrapped("%s", estimateBreakTime(generatedPassword_).c_str());
     }
 }
 
