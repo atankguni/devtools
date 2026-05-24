@@ -178,9 +178,9 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 - Test Data: generates local sample names, emails, and JSON objects.
 - Text Diff: compares two text blocks with unified diff-style output.
 - URL: percent-encodes and decodes URL text.
-- URL Parser: breaks URLs into scheme, host, path, query parameters, and fragment.
+- URL Parser: parses URL parts.
 - UUID Generator: generates UUID v4 values.
-- YAML / JSON: converts common YAML maps/lists/scalars and JSON documents.
+- YAML / JSON: converts YAML and JSON.
 - Timestamp Converter: converts Unix timestamps to local time.
 
 ## Adding a Tool
