@@ -1,11 +1,13 @@
 #include "tools/json_formatter/JsonFormatterTool.hpp"
 
 #include "ui/Clipboard.hpp"
+#include "ui/Workbench.hpp"
 
 #include <imgui.h>
 
 #include <charconv>
 #include <cctype>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -364,13 +366,6 @@ namespace tools::json_formatter {
 
 void JsonFormatterTool::draw()
 {
-    int selectedMode = static_cast<int>(outputMode_);
-    constexpr const char* outputModes[] = { "2 spaces", "4 spaces", "Minified" };
-    ImGui::SetNextItemWidth(150.0F);
-    if (ImGui::Combo("##JsonOutputMode", &selectedMode, outputModes, IM_ARRAYSIZE(outputModes))) {
-        outputMode_ = static_cast<OutputMode>(selectedMode);
-    }
-
     auto runFormatter = [&] {
         JsonOutputMode jsonOutputMode = JsonOutputMode::TwoSpaces;
         switch (outputMode_) {
@@ -388,51 +383,71 @@ void JsonFormatterTool::draw()
         JsonFormatter formatter(input_.data(), jsonOutputMode);
         if (formatter.format(output_, status_)) {
             status_ = "Valid JSON";
+            statusIsError_ = false;
+        } else {
+            statusIsError_ = true;
         }
     };
 
+    ImGuiIO& io = ImGui::GetIO();
+    if ((io.KeyCtrl || io.KeySuper) && ImGui::IsKeyPressed(ImGuiKey_Enter)) {
+        runFormatter();
+    }
+
+    int selectedMode = static_cast<int>(outputMode_);
+    constexpr const char* outputModes[] = { "2 spaces", "4 spaces", "Minified" };
+    if (ui::workbench::segmentedControl("JsonOutputMode", selectedMode, outputModes, IM_ARRAYSIZE(outputModes))) {
+        outputMode_ = static_cast<OutputMode>(selectedMode);
+    }
+
     ImGui::SameLine();
-    if (ImGui::Button("Format")) {
+    if (ui::workbench::primaryButton("Format")) {
         runFormatter();
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Clear")) {
+    if (ui::workbench::quietButton("Clear")) {
         input_.fill('\0');
         output_.clear();
         status_.clear();
+        statusIsError_ = false;
     }
 
     ImGui::SameLine();
-    if (ImGui::Button("Copy Output") && !output_.empty()) {
+    if (ui::workbench::quietButton("Copy") && !output_.empty()) {
         ui::copyToClipboard(output_.c_str());
         status_ = "Copied output";
+        statusIsError_ = false;
     }
 
     if (!status_.empty()) {
         ImGui::SameLine();
-        ImGui::TextDisabled("%s", status_.c_str());
+        ui::workbench::drawStatus(
+            status_,
+            statusIsError_ ? ui::workbench::StatusTone::Error : ui::workbench::StatusTone::Success
+        );
     }
 
-    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0F, 6.0F));
 
     const ImVec2 available = ImGui::GetContentRegionAvail();
     const float gap = 10.0F;
-    const bool split = available.x >= 760.0F;
+    const bool split = available.x >= 820.0F;
     const ImVec2 paneSize(
         split ? (available.x - gap) * 0.5F : available.x,
         split ? available.y : (available.y - gap) * 0.5F
     );
 
-    ImGui::BeginChild("JsonInputPane", paneSize, false);
-    ImGui::TextUnformatted("Input");
-    ImGui::InputTextMultiline(
-        "##JsonInput",
-        input_.data(),
-        input_.size(),
-        ImVec2(-1.0F, -1.0F)
-    );
-    ImGui::EndChild();
+    if (ui::workbench::beginPanel("JsonInputPane", "Input", "Paste or edit JSON", paneSize)) {
+        ImGui::InputTextMultiline(
+            "##JsonInput",
+            input_.data(),
+            input_.size(),
+            ImVec2(-1.0F, -1.0F),
+            ImGuiInputTextFlags_AllowTabInput
+        );
+    }
+    ui::workbench::endPanel();
 
     if (split) {
         ImGui::SameLine(0.0F, gap);
@@ -442,16 +457,17 @@ void JsonFormatterTool::draw()
 
     std::vector<char> outputBuffer(output_.begin(), output_.end());
     outputBuffer.push_back('\0');
-    ImGui::BeginChild("JsonOutputPane", ImVec2(0.0F, 0.0F), false);
-    ImGui::TextUnformatted("Output");
-    ImGui::InputTextMultiline(
-        "##JsonOutput",
-        outputBuffer.data(),
-        outputBuffer.size(),
-        ImVec2(-1.0F, -1.0F),
-        ImGuiInputTextFlags_ReadOnly
-    );
-    ImGui::EndChild();
+    const std::string outputDetail = output_.empty() ? "Result appears here" : std::to_string(output_.size()) + " bytes";
+    if (ui::workbench::beginPanel("JsonOutputPane", "Output", outputDetail, ImVec2(0.0F, 0.0F))) {
+        ImGui::InputTextMultiline(
+            "##JsonOutput",
+            outputBuffer.data(),
+            outputBuffer.size(),
+            ImVec2(-1.0F, -1.0F),
+            ImGuiInputTextFlags_ReadOnly
+        );
+    }
+    ui::workbench::endPanel();
 }
 
 } // namespace tools::json_formatter

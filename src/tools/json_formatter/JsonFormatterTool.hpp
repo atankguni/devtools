@@ -20,6 +20,7 @@ private:
     OutputMode outputMode_ = OutputMode::TwoSpaces;
     std::string output_;
     std::string status_;
+    bool statusIsError_ = false;
 };
 
 } // namespace tools::json_formatter

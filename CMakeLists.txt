@@ -57,6 +57,7 @@ add_executable(devtools
     src/ui/Theme.cpp
     src/ui/UiSettings.cpp
     src/ui/UiShell.cpp
+    src/ui/Workbench.cpp
     src/tools/json_formatter/JsonFormatterTool.cpp
     src/tools/base64/Base64Tool.cpp
     src/tools/case_converter/CaseConverterTool.cpp

@@ -1,16 +1,17 @@
 # DevTools
 
-DevTools is a lightweight native desktop developer utility built with C++23,
+DevTools is a lightweight native desktop developer workbench built with C++23,
 SDL2, Dear ImGui, and OpenGL. It intentionally avoids web technologies,
 embedded browsers, scripting runtimes, package managers, and broad framework
-layers.
+layers while still using a custom product UI instead of trying to mimic each
+host operating system.
 
 ## Goals
 
-- Native compiled desktop application.
+- Native compiled desktop application with a custom developer-workbench UX.
 - Fast startup and low memory use.
 - Minimal, auditable dependency tree.
-- Simple immediate-mode UI.
+- Purpose-built immediate-mode UI components for editor/result workflows.
 - Small modules with explicit ownership.
 - Easy addition of future tools without a plugin framework.
 
@@ -211,7 +212,8 @@ registry.
 The architecture is deliberately direct:
 
 - `platform/` owns SDL and OpenGL window lifetime through RAII.
-- `ui/` owns Dear ImGui setup, theme, shell layout, sidebar, and command palette.
+- `ui/` owns Dear ImGui setup, theme, shell layout, shared workbench controls,
+  sidebar, and command palette.
 - `core/` contains only shared application primitives such as `Tool` and
   `ToolRegistry`.
 - `tools/` contains isolated utility modules. Tools do not depend on each other.
@@ -225,6 +227,11 @@ The code favors readable C++23 over clever compile-time abstractions. Standard
 library facilities are used where they reduce code, but the project avoids
 template-heavy patterns, ECS-style organization, dependency injection, and
 generic plugin infrastructure.
+
+The UI philosophy is "native engine, custom workbench UX": native technology is
+used for speed, footprint, offline behavior, and platform integration, while
+tool layouts, status states, command surfaces, and editor/result workflows are
+designed specifically for developer tasks.
 
 ## Notes
 

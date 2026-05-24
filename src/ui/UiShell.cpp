@@ -12,8 +12,8 @@
 namespace {
 
 constexpr float outerPadding = 12.0F;
-constexpr float panelGap = 10.0F;
-constexpr float sidebarWidth = 244.0F;
+constexpr float panelGap = 8.0F;
+constexpr float sidebarWidth = 232.0F;
 constexpr std::string_view settingsToolId = "__settings";
 
 struct ToolCategory {
@@ -116,7 +116,7 @@ void drawPanelBorder(const ui::ThemePalette& palette)
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     const ImVec2 min = ImGui::GetWindowPos();
     const ImVec2 max(min.x + ImGui::GetWindowWidth(), min.y + ImGui::GetWindowHeight());
-    drawList->AddRect(min, max, palette.border, 10.0F, 0, 1.0F);
+    drawList->AddRect(min, max, palette.border, 8.0F, 0, 1.0F);
 }
 
 void drawBrand(const ui::ThemePalette& palette)
@@ -137,7 +137,7 @@ void drawBrand(const ui::ThemePalette& palette)
     ImGui::SetWindowFontScale(1.02F);
     ImGui::TextUnformatted("DevTools");
     ImGui::SetWindowFontScale(1.0F);
-    ImGui::TextDisabled("Native utility suite");
+    ImGui::TextDisabled("Developer workbench");
     ImGui::EndGroup();
 }
 
@@ -349,7 +349,7 @@ void UiShell::draw(const core::ToolRegistry& registry)
     ImGui::SetNextWindowPos(workspacePos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(workspaceSize, ImGuiCond_Always);
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImGui::ColorConvertU32ToFloat4(palette.panel));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0F, 16.0F));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14.0F, 14.0F));
     if (ImGui::Begin("DevTools Workspace", nullptr, panelFlags)) {
         drawPanelBorder(palette);
         drawCurrentTool(registry);
@@ -451,34 +451,28 @@ void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
         return;
     }
 
-    drawPill(toolCategoryName(activeTool->id), palette);
+    ImGui::SetWindowFontScale(1.13F);
+    ImGui::TextUnformatted(activeTool->name.c_str());
+    ImGui::SetWindowFontScale(1.0F);
+
+    const ImGuiStyle& style = ImGui::GetStyle();
+    const float settingsButtonWidth = ImGui::CalcTextSize("Settings").x + (style.FramePadding.x * 2.0F);
+    const float settingsButtonX = ImGui::GetWindowContentRegionMax().x - settingsButtonWidth;
     ImGui::SameLine();
-    ImGui::TextDisabled("%s", activeTool->description.c_str());
-    if (ImGui::GetWindowWidth() > 380.0F) {
-        ImGui::SameLine(ImGui::GetWindowWidth() - 122.0F);
-    } else {
-        ImGui::SameLine();
-    }
+    ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), settingsButtonX));
     if (ImGui::Button("Settings")) {
         selectTool(settingsToolId);
     }
-    ImGui::Dummy(ImVec2(0.0F, 2.0F));
 
-    ImGui::SetWindowFontScale(1.12F);
-    ImGui::TextUnformatted(activeTool->name.c_str());
-    ImGui::SetWindowFontScale(1.0F);
+    drawPill(toolCategoryName(activeTool->id), palette);
+    ImGui::SameLine();
+    ImGui::PushTextWrapPos(ImGui::GetWindowContentRegionMax().x);
+    ImGui::TextDisabled("%s", activeTool->description.c_str());
+    ImGui::PopTextWrapPos();
     ImGui::Separator();
-    ImGui::Dummy(ImVec2(0.0F, 6.0F));
+    ImGui::Dummy(ImVec2(0.0F, 4.0F));
 
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::ColorConvertU32ToFloat4(palette.surface));
-    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0F);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(14.0F, 14.0F));
-    if (ImGui::BeginChild("Tool Surface", ImVec2(0.0F, 0.0F), false)) {
-        activeTool->draw();
-    }
-    ImGui::EndChild();
-    ImGui::PopStyleVar(2);
-    ImGui::PopStyleColor();
+    activeTool->draw();
 }
 
 void UiShell::drawSettings(const core::ToolRegistry& registry)
