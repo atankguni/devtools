@@ -62,18 +62,23 @@ add_executable(devtools
     src/tools/case_converter/CaseConverterTool.cpp
     src/tools/color/ColorTool.cpp
     src/tools/cron/CronTool.cpp
+    src/tools/csv_json/CsvJsonTool.cpp
     src/tools/hash/HashTool.cpp
     src/tools/jwt/JwtTool.cpp
+    src/tools/line_tools/LineToolsTool.cpp
     src/tools/markup/MarkupTool.cpp
     src/tools/number_base/NumberBaseTool.cpp
     src/tools/password/PasswordTool.cpp
     src/tools/permissions/PermissionsTool.cpp
     src/tools/regex/RegexTool.cpp
     src/tools/sql_formatter/SqlFormatterTool.cpp
+    src/tools/string_inspector/StringInspectorTool.cpp
     src/tools/test_data/TestDataTool.cpp
     src/tools/text_diff/TextDiffTool.cpp
     src/tools/url/UrlTool.cpp
+    src/tools/url_parser/UrlParserTool.cpp
     src/tools/uuid/UuidTool.cpp
+    src/tools/yaml_json/YamlJsonTool.cpp
     src/tools/timestamp/TimestampTool.cpp
 )
 

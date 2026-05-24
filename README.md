@@ -164,18 +164,23 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 - Case Converter: converts text to common identifier and title cases.
 - Color Converter: converts HEX, RGB, HSL, and HSV values.
 - Cron Helper: previews upcoming run times for simple cron expressions.
+- CSV / JSON: converts CSV rows and flat JSON object arrays.
 - Hash Generator: generates MD5, SHA-1, SHA-256, SHA-384, and SHA-512 digests.
 - HTML / XML: formats and minifies markup text.
 - JWT: encodes unsigned tokens and decodes JWT header and payload data.
+- Line Sort / Dedupe: sorts, trims, filters, and deduplicates line-based text.
 - Number Base: converts decimal, octal, hexadecimal, and binary values.
 - Password: generates passwords and checks password strength.
 - Permissions: converts chmod octal and symbolic permissions.
 - Regex Tester: tests regular expressions and captures matches.
 - SQL Formatter: beautifies and minifies SQL with configurable indentation.
+- String Inspector: reports byte, line, word, control character, and UTF-8 information.
 - Test Data: generates local sample names, emails, and JSON objects.
 - Text Diff: compares two text blocks with unified diff-style output.
 - URL: percent-encodes and decodes URL text.
+- URL Parser: breaks URLs into scheme, host, path, query parameters, and fragment.
 - UUID Generator: generates UUID v4 values.
+- YAML / JSON: converts common YAML maps/lists/scalars and JSON documents.
 - Timestamp Converter: converts Unix timestamps to local time.
 
 ## Adding a Tool

@@ -95,6 +95,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "csv_json",
+        .name = "CSV / JSON",
+        .description = "Convert CSV and JSON rows.",
+        .draw = [this] { csvJson_.draw(); },
+    });
+
+    registry_.add({
         .id = "hash",
         .name = "Hash Generator",
         .description = "Generate common hashes.",
@@ -106,6 +113,13 @@ void Application::registerTools()
         .name = "JWT",
         .description = "Encode and decode JWTs.",
         .draw = [this] { jwt_.draw(); },
+    });
+
+    registry_.add({
+        .id = "line_tools",
+        .name = "Line Sort / Dedupe",
+        .description = "Sort, trim, and dedupe lines.",
+        .draw = [this] { lineTools_.draw(); },
     });
 
     registry_.add({
@@ -151,6 +165,13 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "string_inspector",
+        .name = "String Inspector",
+        .description = "Inspect text bytes and code points.",
+        .draw = [this] { stringInspector_.draw(); },
+    });
+
+    registry_.add({
         .id = "test_data",
         .name = "Test Data",
         .description = "Generate sample data.",
@@ -172,10 +193,24 @@ void Application::registerTools()
     });
 
     registry_.add({
+        .id = "url_parser",
+        .name = "URL Parser",
+        .description = "Parse URL parts.",
+        .draw = [this] { urlParser_.draw(); },
+    });
+
+    registry_.add({
         .id = "uuid",
         .name = "UUID Generator",
         .description = "Generate UUID v4 identifiers.",
         .draw = [this] { uuid_.draw(); },
+    });
+
+    registry_.add({
+        .id = "yaml_json",
+        .name = "YAML / JSON",
+        .description = "Convert YAML and JSON.",
+        .draw = [this] { yamlJson_.draw(); },
     });
 
     registry_.add({
