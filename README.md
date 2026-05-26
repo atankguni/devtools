@@ -6,6 +6,14 @@ embedded browsers, scripting runtimes, package managers, and broad framework
 layers while still using a custom product UI instead of trying to mimic each
 host operating system.
 
+## App Overview
+
+![DevTools JSON Formatter overview](screenshots/Screenshot1.png)
+
+![DevTools JWT decoder overview](screenshots/Screenshot2.png)
+
+![DevTools password generator overview](screenshots/Screenshot3.png)
+
 ## Goals
 
 - Native compiled desktop application with a custom developer-workbench UX.
