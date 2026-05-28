@@ -11,7 +11,7 @@
 namespace app {
 
 Application::Application()
-    : window_("DevTools", 1180, 760)
+    : window_("DevTools", 980, 660)
     , imgui_(window_.window(), window_.glContext())
 {
     registerTools();
