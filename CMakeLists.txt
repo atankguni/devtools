@@ -100,6 +100,7 @@ if(APPLE)
         MACOSX_BUNDLE_ICON_FILE "devtools.icns"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${PROJECT_VERSION}"
         MACOSX_BUNDLE_BUNDLE_VERSION "${PROJECT_VERSION}"
+        MACOSX_BUNDLE_COPYRIGHT "Atank Guni - atankguni@gmail.com"
     )
     target_sources(devtools PRIVATE assets/icon/devtools.icns)
     set_source_files_properties(assets/icon/devtools.icns PROPERTIES

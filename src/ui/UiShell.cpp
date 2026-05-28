@@ -15,8 +15,6 @@ constexpr float outerPadding = 12.0F;
 constexpr float panelGap = 8.0F;
 constexpr float sidebarWidth = 232.0F;
 constexpr std::string_view settingsToolId = "__settings";
-constexpr std::string_view appName = "DevTools";
-constexpr std::string_view appVersion = "0.1.0";
 constexpr std::string_view ownerName = "Atank Guni";
 constexpr std::string_view ownerEmail = "atankguni@gmail.com";
 
@@ -438,7 +436,7 @@ void UiShell::drawSidebar(const core::ToolRegistry& registry)
     ImGui::Dummy(ImVec2(0.0F, 2.0F));
     drawPill("Cmd/Ctrl+P", palette);
     ImGui::SameLine();
-    ImGui::TextDisabled("Open command palette");
+    ImGui::TextDisabled("Command palette");
 }
 
 void UiShell::drawCurrentTool(const core::ToolRegistry& registry)
@@ -601,29 +599,8 @@ void UiShell::drawSettings(const core::ToolRegistry& registry)
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0.0F, 4.0F));
 
-        ImGui::Text("%.*s %.*s", static_cast<int>(appName.size()), appName.data(), static_cast<int>(appVersion.size()), appVersion.data());
-        ImGui::Text("Created by %.*s", static_cast<int>(ownerName.size()), ownerName.data());
-        ImGui::Text("Email: %.*s", static_cast<int>(ownerEmail.size()), ownerEmail.data());
-        ImGui::SameLine();
-        if (ImGui::Button("Copy Email")) {
-            ui::copyToClipboard(ownerEmail.data());
-        }
-        ImGui::TextDisabled("Copyright (c) 2026 %.*s.", static_cast<int>(ownerName.size()), ownerName.data());
-        ImGui::TextDisabled("%.*s and its associated project identity are trademarks of %.*s.",
-            static_cast<int>(appName.size()),
-            appName.data(),
-            static_cast<int>(ownerName.size()),
-            ownerName.data()
-        );
-
-        ImGui::Dummy(ImVec2(0.0F, 8.0F));
-        ImGui::TextDisabled(
-            "Current: %s theme, %s font, %.0f px, %s density",
-            themeModeLabel(settings_.themeMode),
-            fontFamilyLabel(settings_.fontFamily),
-            settings_.fontSize,
-            uiDensityLabel(settings_.density)
-        );
+        ImGui::TextUnformatted(ownerName.data());
+        ImGui::TextUnformatted(ownerEmail.data());
     }
     ImGui::EndChild();
     ImGui::PopStyleVar(2);
